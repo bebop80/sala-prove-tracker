@@ -228,7 +228,7 @@
         // --- CARICAMENTO DATI ---
         function fetchData() {
             showLoader(true);
-            fetch(GOOGLE_SCRIPT_URL)
+            fetch("https://script.google.com/macros/s/AKfycbxrfzv3xj9xtfq7_Vwr7jTds5ig0B7aacwZtR2U3YONdrExQIv1V-TjqfrbYynG-nL0/exec")
             .then(response => response.json())
             .then(data => {
                 allPayments = data; // Salva i dati grezzi
@@ -355,4 +355,5 @@
     </script>
 </body>
 </html>
+
 
