@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gestione Sala Prove</title>
+    <style>
+        :root {
+            --bg-color: #F2F2F7;
+            --card-bg: #FFFFFF;
+            --primary-blue: #007AFF;
+            --text-main: #000000;
+            --text-secondary: #8E8E93;
+            --separator: #C6C6C8;
+            
+            /* Colori Band iOS Style */
+            --color-andrea: #FF3B30; /* Red */
+            --color-marco: #FF9500;  /* Orange */
+            --color-alberto: #34C759; /* Green */
+            --color-max: #5856D6;    /* Purple */
+            --color-alessandro: #00C7BE; /* Teal */
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            color: var(--text-main);
+            padding-bottom: 50px;
+        }
+
+        h1 {
+            text-align: center;
+            font-weight: 700;
+            margin-bottom: 25px;
+            font-size: 28px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 18px;
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        input[type="date"], select {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #D1D1D6;
+            border-radius: 10px;
+            background-color: #fff;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:active {
+            opacity: 0.7;
+        }
+
+        /* Chart Styles */
+        .stat-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .stat-name {
+            width: 90px;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .bar-container {
+            flex-grow: 1;
+            background-color: #E5E5EA;
+            height: 20px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-right: 10px;
+        }
+
+        .bar-fill {
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease-out;
+            border-radius: 6px;
+        }
+
+        .stat-count {
+            width: 30px;
+            text-align: right;
+            font-weight: bold;
+            color: var(--text-secondary);
+        }
+
+        /* History Styles */
+        .history-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #E5E5EA;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-date {
+            color: var(--text-secondary);
+        }
+
+        .history-name {
+            font-weight: 600;
+        }
+        
+        .delete-btn {
+            background: none;
+            color: #FF3B30;
+            border: none;
+            font-size: 14px;
+            width: auto;
+            padding: 0;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1>Sala Prove Tracker</h1>
+
+    <div class="card">
+        <h2>Nuova Prova</h2>
+        <div class="form-group">
+            <label for="date">Data</label>
+            <input type="date" id="dateInput">
+        </div>
+        <div class="form-group">
+            <label for="payer">Chi ha pagato?</label>
+            <select id="payerInput">
+                <option value="" disabled selected>Seleziona componente</option>
+                <option value="Andrea">Andrea</option>
+                <option value="Marco">Marco</option>
+                <option value="Alberto">Alberto</option>
+                <option value="Max">Max</option>
+                <option value="Alessandro">Alessandro</option>
+            </select>
+        </div>
+        <button onclick="addPayment()">Aggiungi Pagamento</button>
+    </div>
+
+    <div class="card">
+        <h2>Riepilogo Pagamenti</h2>
+        <div id="chartContainer">
+            </div>
+    </div>
+
+    <div class="card">
+        <h2>Storico Recente</h2>
+        <ul class="history-list" id="historyList">
+            </ul>
+    </div>
+
+    <script>
+        // Configurazione Band
+        const members = [
+            { name: 'Andrea', color: 'var(--color-andrea)' },
+            { name: 'Marco', color: 'var(--color-marco)' },
+            { name: 'Alberto', color: 'var(--color-alberto)' },
+            { name: 'Max', color: 'var(--color-max)' },
+            { name: 'Alessandro', color: 'var(--color-alessandro)' }
+        ];
+
+        // Inizializza data odierna nel form
+        document.getElementById('dateInput').valueAsDate = new Date();
+
+        // Carica dati dal LocalStorage o inizializza array vuoto
+        let payments = JSON.parse(localStorage.getItem('bandPayments')) || [];
+
+        function saveToStorage() {
+            localStorage.setItem('bandPayments', JSON.stringify(payments));
+            updateUI();
+        }
+
+        function addPayment() {
+            const date = document.getElementById('dateInput').value;
+            const payer = document.getElementById('payerInput').value;
+
+            if (!date || !payer) {
+                alert("Per favore inserisci data e chi ha pagato!");
+                return;
+            }
+
+            payments.unshift({ date, payer }); // Aggiunge all'inizio dell'array
+            saveToStorage();
+        }
+
+        function deletePayment(index) {
+            if(confirm("Vuoi cancellare questa voce?")) {
+                payments.splice(index, 1);
+                saveToStorage();
+            }
+        }
+
+        function updateUI() {
+            renderChart();
+            renderHistory();
+        }
+
+        function renderChart() {
+            const container = document.getElementById('chartContainer');
+            container.innerHTML = '';
+
+            // Calcola totali
+            const totals = {};
+            members.forEach(m => totals[m.name] = 0);
+            payments.forEach(p => {
+                if (totals[p.payer] !== undefined) totals[p.payer]++;
+            });
+
+            // Trova il valore massimo per proporzionare le barre
+            const maxVal = Math.max(...Object.values(totals), 1); // Minimo 1 per evitare div by zero
+
+            members.forEach(member => {
+                const count = totals[member.name];
+                const percentage = (count / maxVal) * 100;
+
+                const html = `
+                    <div class="stat-row">
+                        <div class="stat-name">${member.name}</div>
+                        <div class="bar-container">
+                            <div class="bar-fill" style="width: ${percentage}%; background-color: ${member.color};"></div>
+                        </div>
+                        <div class="stat-count">${count}</div>
+                    </div>
+                `;
+                container.innerHTML += html;
+            });
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('historyList');
+            list.innerHTML = '';
+
+            payments.forEach((p, index) => {
+                // Formatta data (da YYYY-MM-DD a DD/MM/YYYY)
+                const dateObj = new Date(p.date);
+                const dateStr = dateObj.toLocaleDateString('it-IT');
+
+                const html = `
+                    <li class="history-item">
+                        <span class="history-date">${dateStr}</span>
+                        <div>
+                            <span class="history-name" style="color: ${getMemberColor(p.payer)}">${p.payer}</span>
+                            <button class="delete-btn" onclick="deletePayment(${index})">✕</button>
+                        </div>
+                    </li>
+                `;
+                list.innerHTML += html;
+            });
+        }
+
+        function getMemberColor(name) {
+            const member = members.find(m => m.name === name);
+            return member ? member.color : '#000';
+        }
+
+        // Primo render all'avvio
+        updateUI();
+    </script>
+</body>
+</html>
