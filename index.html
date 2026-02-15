@@ -121,7 +121,7 @@
 
     <script>
         // --- CONFIGURAZIONE ---
-        // INCOLLA QUI L'URL DEL TUO SCRIPT GOOGLE
+        // URL CORRETTO SENZA VIRGOLETTE EXTRA
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwJyGjRvied2jpCd4tatdKD_7CRdzxxE3gJcB6YtBvHHwUsw6fe30GmqqhW1IELiEY/exec"; 
         // -----------------------
 
@@ -147,11 +147,8 @@
                 return;
             }
 
-            if(GOOGLE_SCRIPT_URL.includes("https://script.google.com/macros/s/AKfycbwJyGjRvied2jpCd4tatdKD_7CRdzxxE3gJcB6YtBvHHwUsw6fe30GmqqhW1IELiEY/exec")) {
-                alert("Devi configurare l'URL dello script nel codice!");
-                return;
-            }
-
+            // RIMOSSO IL CONTROLLO CHE BLOCCAVA L'URL
+            
             // UI Loading
             btn.disabled = true;
             btn.innerText = "Salvataggio in corso...";
@@ -185,10 +182,7 @@
         function fetchData() {
             showLoader(true);
             
-            if(GOOGLE_SCRIPT_URL.includes("https://script.google.com/macros/s/AKfycbwJyGjRvied2jpCd4tatdKD_7CRdzxxE3gJcB6YtBvHHwUsw6fe30GmqqhW1IELiEY/exec")) {
-                showLoader(false);
-                return; // Evita errore se URL non è impostato
-            }
+            // RIMOSSO IL CONTROLLO CHE BLOCCAVA L'URL
 
             fetch(GOOGLE_SCRIPT_URL)
             .then(response => response.json())
@@ -258,8 +252,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
