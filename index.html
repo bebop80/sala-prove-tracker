@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sala Prove Tracker Online</title>
+    <title>Sala Prove Tracker 2.0 🎸</title>
     <style>
         :root {
             --bg-color: #F2F2F7;
             --card-bg: #FFFFFF;
             --primary-blue: #007AFF;
+            --danger-red: #FF3B30;
+            --whatsapp-green: #25D366;
             --text-main: #000000;
             --text-secondary: #8E8E93;
             --color-andrea: #FF3B30;
@@ -23,7 +25,7 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
-            margin: 0; padding: 20px; color: var(--text-main); padding-bottom: 50px;
+            margin: 0; padding: 20px; color: var(--text-main); padding-bottom: 80px;
         }
 
         h1 { text-align: center; font-weight: 700; margin-bottom: 20px; font-size: 26px; }
@@ -33,7 +35,7 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px;
         }
 
-        h2 { font-size: 18px; margin: 0 0 15px 0; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; }
+        h2 { font-size: 18px; margin: 0 0 15px 0; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
 
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 8px; font-weight: 500; }
@@ -43,25 +45,36 @@
             border-radius: 10px; background-color: #fff; appearance: none;
         }
 
-        button {
-            width: 100%; padding: 14px; background-color: var(--primary-blue);
-            color: white; border: none; border-radius: 12px; font-size: 17px;
-            font-weight: 600; cursor: pointer; transition: opacity 0.2s;
+        /* Pulsanti */
+        .btn {
+            width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 16px;
+            font-weight: 600; cursor: pointer; transition: opacity 0.2s; text-align: center;
+            display: inline-block; text-decoration: none;
+            box-sizing: border-box;
         }
+        .btn-primary { background-color: var(--primary-blue); color: white; }
+        .btn-whatsapp { background-color: var(--whatsapp-green); color: white; margin-top: 10px; display: none; }
+        .btn-outline { background: transparent; border: 1px solid var(--primary-blue); color: var(--primary-blue); padding: 8px; font-size: 14px; margin-bottom: 15px;}
+        
         button:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* Chart & List */
+        /* Chart */
         .stat-row { display: flex; align-items: center; margin-bottom: 12px; }
         .stat-name { width: 90px; font-size: 15px; font-weight: 500; }
         .bar-container { flex-grow: 1; background-color: #E5E5EA; height: 20px; border-radius: 6px; overflow: hidden; margin-right: 10px; }
         .bar-fill { height: 100%; width: 0%; transition: width 0.5s ease-out; border-radius: 6px; }
         .stat-count { width: 30px; text-align: right; font-weight: bold; color: var(--text-secondary); }
 
+        /* History List & Delete */
         .history-list { list-style: none; padding: 0; margin: 0; }
-        .history-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #E5E5EA; }
+        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #E5E5EA; }
         .history-item:last-child { border-bottom: none; }
-        .history-date { color: var(--text-secondary); }
-        .history-name { font-weight: 600; }
+        
+        .delete-btn {
+            background-color: #FF3B301A; color: var(--danger-red); border: none;
+            padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;
+            margin-left: 10px;
+        }
 
         /* Loading Spinner */
         #loader { text-align: center; margin: 20px 0; display: none; }
@@ -70,19 +83,17 @@
             border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        .refresh-btn {
-            background: none; border: none; color: var(--primary-blue);
-            font-size: 14px; margin-bottom: 10px; cursor: pointer; text-align: center; width: 100%;
-        }
+
+        /* Utility buttons container */
+        .utility-bar { display: flex; gap: 10px; margin-bottom: 15px; }
 
     </style>
 </head>
 <body>
 
-    <h1>Sala Prove Tracker ☁️</h1>
+    <h1>Sala Prove Tracker 2.0 🎸</h1>
     
-    <button onclick="fetchData()" class="refresh-btn">🔄 Aggiorna Dati</button>
+    <button onclick="fetchData()" class="btn btn-outline">🔄 Aggiorna Dati</button>
 
     <div id="loader">
         <div class="spinner"></div>
@@ -106,23 +117,35 @@
                 <option value="Alessandro">Alessandro</option>
             </select>
         </div>
-        <button id="saveBtn" onclick="sendData()">Aggiungi Pagamento</button>
+        <button id="saveBtn" class="btn btn-primary" onclick="sendData()">Aggiungi Pagamento</button>
+        
+        <!-- Tasto WhatsApp (appare dopo il salvataggio) -->
+        <a id="waBtn" href="#" target="_blank" class="btn btn-whatsapp">📲 Notifica su WhatsApp</a>
     </div>
 
     <div class="card">
-        <h2>Riepilogo</h2>
+        <h2>
+            Riepilogo
+            <select id="yearFilter" onchange="applyFilter()" style="width: auto; padding: 5px; font-size: 14px; border: 1px solid #ddd; border-radius: 5px;">
+                <option value="all">Tutto</option>
+                <option value="2026" selected>2026</option>
+                <option value="2025">2025</option>
+            </select>
+        </h2>
         <div id="chartContainer"></div>
+        <div style="margin-top: 15px; text-align: center;">
+            <button onclick="exportCSV()" style="font-size: 12px; color: var(--primary-blue); background: none; border: none; cursor: pointer; text-decoration: underline;">📂 Scarica Excel/CSV</button>
+        </div>
     </div>
 
     <div class="card">
-        <h2>Storico Recente</h2>
+        <h2>Ultimi Pagamenti</h2>
         <ul class="history-list" id="historyList"></ul>
     </div>
 
     <script>
         // --- CONFIGURAZIONE ---
-        // URL CORRETTO SENZA VIRGOLETTE EXTRA
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwJyGjRvied2jpCd4tatdKD_7CRdzxxE3gJcB6YtBvHHwUsw6fe30GmqqhW1IELiEY/exec"; 
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwN_HdPs3bLRE-FubGieY3r1iisVy34FoSibfsfTNMyH414vDjEdCVz1PONnN4zAaCW/exec"; 
         // -----------------------
 
         const members = [
@@ -134,67 +157,109 @@
         ];
 
         document.getElementById('dateInput').valueAsDate = new Date();
-        let payments = [];
+        let allPayments = []; // Contiene TUTTI i dati scaricati
+        let filteredPayments = []; // Contiene i dati filtrati per anno
 
-        // Funzione per inviare i dati
+        // --- SALVATAGGIO ---
         function sendData() {
             const date = document.getElementById('dateInput').value;
             const payer = document.getElementById('payerInput').value;
             const btn = document.getElementById('saveBtn');
+            const waBtn = document.getElementById('waBtn');
 
-            if (!date || !payer) {
-                alert("Compila tutti i campi!");
-                return;
-            }
+            if (!date || !payer) { alert("Compila tutti i campi!"); return; }
 
-            // RIMOSSO IL CONTROLLO CHE BLOCCAVA L'URL
-            
-            // UI Loading
             btn.disabled = true;
-            btn.innerText = "Salvataggio in corso...";
+            btn.innerText = "Salvataggio...";
             showLoader(true);
+            waBtn.style.display = 'none';
 
-            // POST Request
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors', // Importante per Google Scripts
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ date: date, payer: payer })
             })
             .then(() => {
-                // Reset form e ricarica dati
+                // Prepare WhatsApp Link
+                const dateObj = new Date(date);
+                const niceDate = dateObj.toLocaleDateString('it-IT', {day: 'numeric', month: 'long'});
+                const text = `🎸 *Sala Prove Pagata!* \n📅 Data: ${niceDate}\n👤 Pagato da: ${payer}\n\nSegnato sull'app! ✅`;
+                waBtn.href = `https://wa.me/?text=${encodeURIComponent(text)}`;
+                waBtn.style.display = 'block';
+
                 document.getElementById('payerInput').value = "";
                 btn.innerText = "Aggiungi Pagamento";
                 btn.disabled = false;
-                // Attendiamo un secondo per permettere a Google Sheets di aggiornarsi
-                setTimeout(fetchData, 1500); 
+                
+                // Attendiamo un attimo prima di ricaricare per dare tempo a Google Sheets
+                setTimeout(fetchData, 1500);
             })
             .catch(error => {
-                alert("Errore nel salvataggio: " + error);
+                alert("Errore: " + error);
                 btn.disabled = false;
                 showLoader(false);
             });
         }
 
-        // Funzione per scaricare i dati
-        function fetchData() {
+        // --- CANCELLAZIONE (UNDO) ---
+        function deleteLastEntry() {
+            if(!confirm("Vuoi davvero cancellare l'ultimo inserimento registrato nel foglio?")) return;
+
             showLoader(true);
             
-            // RIMOSSO IL CONTROLLO CHE BLOCCAVA L'URL
+            // Per cancellare inviamo una POST con action speciale
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: "deleteLast" })
+            })
+            .then(() => {
+                // Ricarica i dati dopo la cancellazione
+                setTimeout(fetchData, 1500);
+            })
+            .catch(e => {
+                alert("Errore cancellazione: " + e);
+                showLoader(false);
+            });
+        }
 
+        // --- CARICAMENTO DATI ---
+        function fetchData() {
+            showLoader(true);
             fetch(GOOGLE_SCRIPT_URL)
             .then(response => response.json())
             .then(data => {
-                payments = data;
-                updateUI();
+                allPayments = data; // Salva i dati grezzi
+                applyFilter(); // Applica il filtro anno e aggiorna la UI
                 showLoader(false);
             })
             .catch(error => {
                 console.error('Errore:', error);
                 showLoader(false);
             });
+        }
+
+        // --- FILTRI E UI ---
+        function applyFilter() {
+            const year = document.getElementById('yearFilter').value;
+            
+            if (year === 'all') {
+                filteredPayments = allPayments;
+            } else {
+                // Filtra solo le date che iniziano con l'anno selezionato (formato YYYY-MM-DD)
+                // Nota: Google Sheets potrebbe restituire date in formati diversi, qui assumiamo stringhe ISO o simili
+                // Se la data arriva come "2026-02-15T...", startWith funziona.
+                filteredPayments = allPayments.filter(p => {
+                    // Gestione robusta della data: proviamo a convertirla in stringa ISO
+                    try {
+                         const d = new Date(p.date);
+                         return d.getFullYear().toString() === year;
+                    } catch(e) { return false; }
+                });
+            }
+            updateUI();
         }
 
         function updateUI() {
@@ -207,7 +272,7 @@
             // Calcolo Totali
             const totals = {};
             members.forEach(m => totals[m.name] = 0);
-            payments.forEach(p => {
+            filteredPayments.forEach(p => {
                 if (totals[p.payer] !== undefined) totals[p.payer]++;
             });
 
@@ -227,26 +292,64 @@
                     </div>`;
             });
 
-            // Render Storico (mostra ultimi 10)
-            payments.slice(0, 10).forEach(p => {
+            // Render Storico (con tasto Delete solo sul primo elemento se non filtrato)
+            // Se stiamo guardando "Tutto" o l'anno corrente, possiamo cancellare l'ultimo inserimento
+            const currentYear = new Date().getFullYear().toString();
+            const yearFilterVal = document.getElementById('yearFilter').value;
+            const canDelete = (yearFilterVal === 'all' || yearFilterVal === currentYear);
+
+            // Mostriamo solo gli ultimi 15 pagamenti nella lista
+            filteredPayments.slice(0, 15).forEach((p, index) => {
                 const d = new Date(p.date);
                 const dateStr = d.toLocaleDateString('it-IT');
                 const member = members.find(m => m.name === p.payer);
                 const color = member ? member.color : '#000';
                 
+                let deleteBtn = '';
+                // Il tasto cestino appare SOLO sul primo elemento della lista (index 0)
+                // e SOLO se stiamo visualizzando i dati più recenti (non uno storico vecchio)
+                if (index === 0 && canDelete) {
+                    deleteBtn = `<button onclick="deleteLastEntry()" class="delete-btn" title="Elimina ultima riga dal foglio">🗑️ Cancella</button>`;
+                }
+
                 historyList.innerHTML += `
                     <li class="history-item">
-                        <span class="history-date">${dateStr}</span>
-                        <span class="history-name" style="color: ${color}">${p.payer}</span>
+                        <div style="display:flex; align-items:center;">
+                            <span class="history-date">${dateStr}</span>
+                            <span class="history-name" style="color: ${color}; margin-left:10px;">${p.payer}</span>
+                        </div>
+                        ${deleteBtn}
                     </li>`;
             });
+        }
+
+        // --- EXPORT CSV ---
+        function exportCSV() {
+            // Intestazione CSV
+            let csvContent = "data:text/csv;charset=utf-8,Data,Chi ha pagato\n";
+            
+            // Aggiungi righe
+            filteredPayments.forEach(p => {
+                const d = new Date(p.date);
+                const dateStr = d.toLocaleDateString('it-IT'); // Formato GG/MM/AAAA per Excel italiano
+                csvContent += `${dateStr},${p.payer}\n`;
+            });
+
+            // Crea link nascosto e cliccalo
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "sala_prove_export.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         function showLoader(show) {
             document.getElementById('loader').style.display = show ? 'block' : 'none';
         }
 
-        // Carica dati all'avvio
+        // Avvio
         fetchData();
 
     </script>
