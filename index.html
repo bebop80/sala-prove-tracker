@@ -3,111 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sala Prove Tracker 2.0 🎸</title>
+    <title>Sala Prove Tracker</title>
     <style>
         :root {
             --bg-color: #F2F2F7;
             --card-bg: #FFFFFF;
             --primary-blue: #007AFF;
-            --danger-red: #FF3B30;
-            --whatsapp-green: #25D366;
             --text-main: #000000;
             --text-secondary: #8E8E93;
-            --color-andrea: #FF3B30;
-            --color-marco: #FF9500;
-            --color-alberto: #34C759;
-            --color-max: #5856D6;
-            --color-alessandro: #00C7BE;
+            --color-andrea: #FF3B30; --color-marco: #FF9500; --color-alberto: #34C759;
+            --color-max: #5856D6; --color-alessandro: #00C7BE;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            margin: 0; padding: 20px; color: var(--text-main); padding-bottom: 80px;
-        }
-
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px; color: var(--text-main); padding-bottom: 50px; }
         h1 { text-align: center; font-weight: 700; margin-bottom: 20px; font-size: 26px; }
-
-        .card {
-            background: var(--card-bg); border-radius: 16px; padding: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px;
-        }
-
-        h2 { font-size: 18px; margin: 0 0 15px 0; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
-
+        .card { background: var(--card-bg); border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        h2 { font-size: 18px; margin: 0 0 15px 0; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; }
         .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 8px; font-weight: 500; }
-
-        input, select {
-            width: 100%; padding: 12px; font-size: 16px; border: 1px solid #D1D1D6;
-            border-radius: 10px; background-color: #fff; appearance: none;
-        }
-
-        /* Pulsanti */
-        .btn {
-            width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 16px;
-            font-weight: 600; cursor: pointer; transition: opacity 0.2s; text-align: center;
-            display: inline-block; text-decoration: none;
-            box-sizing: border-box;
-        }
-        .btn-primary { background-color: var(--primary-blue); color: white; }
-        .btn-whatsapp { background-color: var(--whatsapp-green); color: white; margin-top: 10px; display: none; }
-        .btn-outline { background: transparent; border: 1px solid var(--primary-blue); color: var(--primary-blue); padding: 8px; font-size: 14px; margin-bottom: 15px;}
-        
+        label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 14px;}
+        input, select { width: 100%; padding: 12px; font-size: 16px; border: 1px solid #D1D1D6; border-radius: 10px; background-color: #fff; appearance: none; }
+        button { width: 100%; padding: 14px; background-color: var(--primary-blue); color: white; border: none; border-radius: 12px; font-size: 17px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
         button:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        /* Chart */
+        
+        .flex-row { display: flex; gap: 10px; margin-bottom: 15px; }
+        .flex-col { flex: 1; }
+        
+        /* Chart & List */
         .stat-row { display: flex; align-items: center; margin-bottom: 12px; }
         .stat-name { width: 90px; font-size: 15px; font-weight: 500; }
         .bar-container { flex-grow: 1; background-color: #E5E5EA; height: 20px; border-radius: 6px; overflow: hidden; margin-right: 10px; }
         .bar-fill { height: 100%; width: 0%; transition: width 0.5s ease-out; border-radius: 6px; }
         .stat-count { width: 30px; text-align: right; font-weight: bold; color: var(--text-secondary); }
-
-        /* History List & Delete */
         .history-list { list-style: none; padding: 0; margin: 0; }
-        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #E5E5EA; }
+        .history-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #E5E5EA; }
         .history-item:last-child { border-bottom: none; }
-        
-        .delete-btn {
-            background-color: #FF3B301A; color: var(--danger-red); border: none;
-            padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;
-            margin-left: 10px;
-        }
+        .history-date { color: var(--text-secondary); }
+        .history-name { font-weight: 600; }
 
-        /* Loading Spinner */
+        /* Loader */
         #loader { text-align: center; margin: 20px 0; display: none; }
-        .spinner {
-            border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-blue);
-            border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto;
-        }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-blue); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .refresh-btn { background: none; border: none; color: var(--primary-blue); font-size: 14px; margin-bottom: 10px; cursor: pointer; text-align: center; width: 100%; }
 
-        /* Utility buttons container */
-        .utility-bar { display: flex; gap: 10px; margin-bottom: 15px; }
-
+        /* Next Rehearsal Card Styles */
+        .next-box { background: #F2F2F7; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
+        .next-title { font-weight: 700; font-size: 20px; margin: 0 0 5px 0; color: #000; text-transform: capitalize; }
+        .next-time { color: var(--text-secondary); font-size: 15px; margin: 0 0 10px 0; }
+        .next-location { display: flex; align-items: flex-start; gap: 8px; font-size: 15px; }
+        .maps-link { color: var(--primary-blue); text-decoration: none; font-weight: 500; display: block; margin-top: 2px; font-size: 14px; }
     </style>
 </head>
 <body>
 
-    <h1>Sala Prove Tracker 2.0 🎸</h1>
-    
-    <button onclick="fetchData()" class="btn btn-outline">🔄 Aggiorna Dati</button>
+    <h1>Sala Prove Tracker ☁️</h1>
+    <button onclick="fetchData()" class="refresh-btn">🔄 Aggiorna Dati</button>
 
-    <div id="loader">
-        <div class="spinner"></div>
-        <p style="font-size: 12px; color: #888; margin-top: 10px;">Sincronizzazione...</p>
+    <div id="loader"><div class="spinner"></div></div>
+
+    <div class="card" id="nextCard">
+        <h2>Prossima Prova 🎸</h2>
+        
+        <div id="nextViewMode" style="display: none;">
+            <div class="next-box">
+                <p class="next-title" id="displayNextDate">Nessuna data impostata</p>
+                <p class="next-time" id="displayNextTime"></p>
+                <div class="next-location" id="displayNextLocationBox" style="display: none;">
+                    <span>📍</span>
+                    <div>
+                        <strong id="displayNextRoomName"></strong>
+                        <a id="displayNextMapsLink" href="#" target="_blank" class="maps-link">Apri su Google Maps</a>
+                    </div>
+                </div>
+            </div>
+            <button onclick="toggleNextEdit(true)" style="background-color: #E5E5EA; color: #000;">Modifica Prossima Prova</button>
+        </div>
+
+        <div id="nextEditMode">
+            <div class="form-group">
+                <label>Data (Opzionale, clicca per il calendario)</label>
+                <input type="date" id="nextDateInput">
+            </div>
+            <div class="flex-row">
+                <div class="flex-col">
+                    <label>Dalle ore</label>
+                    <input type="time" id="nextTimeFrom">
+                </div>
+                <div class="flex-col">
+                    <label>Alle ore</label>
+                    <input type="time" id="nextTimeTo">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Sala Prove</label>
+                <select id="nextRoomSelect">
+                    <option value="" selected>Seleziona la sala...</option>
+                    </select>
+            </div>
+            <div class="flex-row">
+                <button onclick="saveNextRehearsal()" style="flex: 2;">Salva Programmazione</button>
+                <button onclick="toggleNextEdit(false)" id="cancelNextBtn" style="flex: 1; background-color: #FF3B30;">Annulla</button>
+            </div>
+        </div>
     </div>
 
     <div class="card">
-        <h2>Nuova Prova</h2>
+        <h2>Nuovo Pagamento Effettuato</h2>
         <div class="form-group">
-            <label>Data</label>
+            <label>Data della prova appena passata</label>
             <input type="date" id="dateInput">
         </div>
         <div class="form-group">
-            <label>Chi ha pagato?</label>
+            <label>Chi l'ha pagata?</label>
             <select id="payerInput">
                 <option value="" disabled selected>Seleziona componente</option>
                 <option value="Andrea">Andrea</option>
@@ -117,243 +126,175 @@
                 <option value="Alessandro">Alessandro</option>
             </select>
         </div>
-        <button id="saveBtn" class="btn btn-primary" onclick="sendData()">Aggiungi Pagamento</button>
-        
-        <!-- Tasto WhatsApp (appare dopo il salvataggio) -->
-        <a id="waBtn" href="#" target="_blank" class="btn btn-whatsapp">📲 Notifica su WhatsApp</a>
+        <button id="saveBtn" onclick="sendPayment()">Aggiungi Pagamento</button>
     </div>
 
     <div class="card">
-        <h2>
-            Riepilogo
-            <select id="yearFilter" onchange="applyFilter()" style="width: auto; padding: 5px; font-size: 14px; border: 1px solid #ddd; border-radius: 5px;">
-                <option value="all">Tutto</option>
-                <option value="2026" selected>2026</option>
-                <option value="2025">2025</option>
-            </select>
-        </h2>
+        <h2>Riepilogo</h2>
         <div id="chartContainer"></div>
-        <div style="margin-top: 15px; text-align: center;">
-            <button onclick="exportCSV()" style="font-size: 12px; color: var(--primary-blue); background: none; border: none; cursor: pointer; text-decoration: underline;">📂 Scarica Excel/CSV</button>
-        </div>
     </div>
 
     <div class="card">
-        <h2>Ultimi Pagamenti</h2>
+        <h2>Storico Recente</h2>
         <ul class="history-list" id="historyList"></ul>
     </div>
 
     <script>
-        // --- CONFIGURAZIONE ---
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxrfzv3xj9xtfq7_Vwr7jTds5ig0B7aacwZtR2U3YONdrExQIv1V-TjqfrbYynG-nL0/exec"; 
-        // -----------------------
+        // --- INCOLLA QUI IL TUO NUOVO URL GOOGLE SCRIPT ---
+        const GOOGLE_SCRIPT_URL = https://script.google.com/macros/s/AKfycbxi8qGHc16aK0qgmPVv3OwAn8BKSUkV4qSlKsFEsKuv3SaNrZhlv4bbMgkGx7SrUQF6/exec; 
+        
+        // --- GESTIONE SALE PROVE (PUOI AGGIUNGERE/RIMUOVERE SALE QUI) ---
+        const saleProve = [
+            { id: "star_musik", name: "Star-Musik da Claudio", address: "via Luigi Riva, Gallarate" },
+            { id: "urban_groove", name: "Urban Groove da Matteo", address: "via Don Gnocchi 6, Cassano Magnago" },
+            { id: "decibel", name: "Decibel da Piz", address: "Via Alba, 17, Busto Arsizio" }
+        ];
 
         const members = [
-            { name: 'Andrea', color: 'var(--color-andrea)' },
-            { name: 'Marco', color: 'var(--color-marco)' },
-            { name: 'Alberto', color: 'var(--color-alberto)' },
-            { name: 'Max', color: 'var(--color-max)' },
+            { name: 'Andrea', color: 'var(--color-andrea)' }, { name: 'Marco', color: 'var(--color-marco)' },
+            { name: 'Alberto', color: 'var(--color-alberto)' }, { name: 'Max', color: 'var(--color-max)' },
             { name: 'Alessandro', color: 'var(--color-alessandro)' }
         ];
 
-        document.getElementById('dateInput').valueAsDate = new Date();
-        let allPayments = []; // Contiene TUTTI i dati scaricati
-        let filteredPayments = []; // Contiene i dati filtrati per anno
+        let payments = [];
 
-        // --- SALVATAGGIO ---
-        function sendData() {
+        // Inizializza l'app
+        document.getElementById('dateInput').valueAsDate = new Date();
+        populateRoomsDropdown();
+        fetchData();
+
+        function populateRoomsDropdown() {
+            const select = document.getElementById('nextRoomSelect');
+            saleProve.forEach(sala => {
+                select.innerHTML += `<option value="${sala.id}">${sala.name}</option>`;
+            });
+        }
+
+        function fetchData() {
+            showLoader(true);
+            if(GOOGLE_SCRIPT_URL.includes(https://script.google.com/macros/s/AKfycbxi8qGHc16aK0qgmPVv3OwAn8BKSUkV4qSlKsFEsKuv3SaNrZhlv4bbMgkGx7SrUQF6/exec)) return showLoader(false);
+
+            fetch(GOOGLE_SCRIPT_URL)
+            .then(res => res.json())
+            .then(data => {
+                payments = data.payments || [];
+                updateUI();
+                updateNextRehearsalUI(data.next);
+                showLoader(false);
+            }).catch(e => { console.error('Errore:', e); showLoader(false); });
+        }
+
+        // --- GESTIONE PROSSIMA PROVA ---
+        function toggleNextEdit(showEdit) {
+            document.getElementById('nextEditMode').style.display = showEdit ? 'block' : 'none';
+            document.getElementById('nextViewMode').style.display = showEdit ? 'none' : 'block';
+        }
+
+        function formatDataItaliana(dateStr) {
+            if(!dateStr) return "";
+            const d = new Date(dateStr);
+            const options = { weekday: 'long', day: 'numeric', month: 'long' };
+            // Formatta e mette la lettera maiuscola (es. "giovedì 24 marzo" -> "Giovedì 24 marzo")
+            let formatted = d.toLocaleDateString('it-IT', options);
+            return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+        }
+
+        function updateNextRehearsalUI(nextData) {
+            if (!nextData || !nextData.date) {
+                // Se non c'è nessuna prova in programma, mostra direttamente la modifica
+                toggleNextEdit(true);
+                document.getElementById('cancelNextBtn').style.display = 'none'; // Nascondi il tasto annulla
+            } else {
+                toggleNextEdit(false);
+                document.getElementById('cancelNextBtn').style.display = 'block';
+
+                // Popola la modalità vista
+                document.getElementById('displayNextDate').innerText = formatDataItaliana(nextData.date);
+                
+                const timeStr = (nextData.from || nextData.to) ? `🕒 Dalle ${nextData.from || '--:--'} alle ${nextData.to || '--:--'}` : "";
+                document.getElementById('displayNextTime').innerText = timeStr;
+
+                // Gestione Sala e Google Maps
+                const sala = saleProve.find(s => s.id === nextData.room);
+                if(sala) {
+                    document.getElementById('displayNextRoomName').innerText = sala.name;
+                    // Genera link Google Maps
+                    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sala.address)}`;
+                    document.getElementById('displayNextMapsLink').href = mapsUrl;
+                    document.getElementById('displayNextMapsLink').innerText = sala.address + " (Apri Maps)";
+                    document.getElementById('displayNextLocationBox').style.display = 'flex';
+                } else {
+                    document.getElementById('displayNextLocationBox').style.display = 'none';
+                }
+
+                // Popola gli input per la modifica
+                document.getElementById('nextDateInput').value = nextData.date;
+                document.getElementById('nextTimeFrom').value = nextData.from;
+                document.getElementById('nextTimeTo').value = nextData.to;
+                document.getElementById('nextRoomSelect').value = nextData.room;
+            }
+        }
+
+        function saveNextRehearsal() {
+            const nextData = {
+                date: document.getElementById('nextDateInput').value,
+                from: document.getElementById('nextTimeFrom').value,
+                to: document.getElementById('nextTimeTo').value,
+                room: document.getElementById('nextRoomSelect').value
+            };
+
+            showLoader(true);
+            toggleNextEdit(false); // Nascondi temporaneamente
+
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST', mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'next_rehearsal', next: nextData })
+            }).then(() => setTimeout(fetchData, 1500));
+        }
+
+        // --- GESTIONE PAGAMENTI (VECCHIA LOGICA) ---
+        function sendPayment() {
             const date = document.getElementById('dateInput').value;
             const payer = document.getElementById('payerInput').value;
             const btn = document.getElementById('saveBtn');
-            const waBtn = document.getElementById('waBtn');
 
-            if (!date || !payer) { alert("Compila tutti i campi!"); return; }
+            if (!date || !payer) return alert("Compila data e pagante!");
 
-            btn.disabled = true;
-            btn.innerText = "Salvataggio...";
-            showLoader(true);
-            waBtn.style.display = 'none';
+            btn.disabled = true; btn.innerText = "Salvataggio..."; showLoader(true);
 
             fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
+                method: 'POST', mode: 'no-cors',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ date: date, payer: payer })
-            })
-            .then(() => {
-                // Prepare WhatsApp Link
-                const dateObj = new Date(date);
-                const niceDate = dateObj.toLocaleDateString('it-IT', {day: 'numeric', month: 'long'});
-                const text = `🎸 *Sala Prove Pagata!* \n📅 Data: ${niceDate}\n👤 Pagato da: ${payer}\n\nSegnato sull'app! ✅`;
-                waBtn.href = `https://wa.me/?text=${encodeURIComponent(text)}`;
-                waBtn.style.display = 'block';
-
+                body: JSON.stringify({ type: 'payment', payment: { date: date, payer: payer } })
+            }).then(() => {
                 document.getElementById('payerInput').value = "";
-                btn.innerText = "Aggiungi Pagamento";
-                btn.disabled = false;
-                
-                // Attendiamo un attimo prima di ricaricare per dare tempo a Google Sheets
+                btn.innerText = "Aggiungi Pagamento"; btn.disabled = false;
                 setTimeout(fetchData, 1500);
-            })
-            .catch(error => {
-                alert("Errore: " + error);
-                btn.disabled = false;
-                showLoader(false);
-            });
-        }
-
-        // --- CANCELLAZIONE (UNDO) ---
-        function deleteLastEntry() {
-            if(!confirm("Vuoi davvero cancellare l'ultimo inserimento registrato nel foglio?")) return;
-
-            showLoader(true);
-            
-            // Per cancellare inviamo una POST con action speciale
-            fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: "deleteLast" })
-            })
-            .then(() => {
-                // Ricarica i dati dopo la cancellazione
-                setTimeout(fetchData, 1500);
-            })
-            .catch(e => {
-                alert("Errore cancellazione: " + e);
-                showLoader(false);
-            });
-        }
-
-        // --- CARICAMENTO DATI ---
-        function fetchData() {
-            showLoader(true);
-            fetch("https://script.google.com/macros/s/AKfycbxrfzv3xj9xtfq7_Vwr7jTds5ig0B7aacwZtR2U3YONdrExQIv1V-TjqfrbYynG-nL0/exec")
-            .then(response => response.json())
-            .then(data => {
-                allPayments = data; // Salva i dati grezzi
-                applyFilter(); // Applica il filtro anno e aggiorna la UI
-                showLoader(false);
-            })
-            .catch(error => {
-                console.error('Errore:', error);
-                showLoader(false);
-            });
-        }
-
-        // --- FILTRI E UI ---
-        function applyFilter() {
-            const year = document.getElementById('yearFilter').value;
-            
-            if (year === 'all') {
-                filteredPayments = allPayments;
-            } else {
-                // Filtra solo le date che iniziano con l'anno selezionato (formato YYYY-MM-DD)
-                // Nota: Google Sheets potrebbe restituire date in formati diversi, qui assumiamo stringhe ISO o simili
-                // Se la data arriva come "2026-02-15T...", startWith funziona.
-                filteredPayments = allPayments.filter(p => {
-                    // Gestione robusta della data: proviamo a convertirla in stringa ISO
-                    try {
-                         const d = new Date(p.date);
-                         return d.getFullYear().toString() === year;
-                    } catch(e) { return false; }
-                });
-            }
-            updateUI();
+            }).catch(() => { btn.disabled = false; showLoader(false); });
         }
 
         function updateUI() {
             const chartContainer = document.getElementById('chartContainer');
             const historyList = document.getElementById('historyList');
-            
-            chartContainer.innerHTML = '';
-            historyList.innerHTML = '';
+            chartContainer.innerHTML = ''; historyList.innerHTML = '';
 
-            // Calcolo Totali
-            const totals = {};
-            members.forEach(m => totals[m.name] = 0);
-            filteredPayments.forEach(p => {
-                if (totals[p.payer] !== undefined) totals[p.payer]++;
-            });
-
+            const totals = {}; members.forEach(m => totals[m.name] = 0);
+            payments.forEach(p => { if (totals[p.payer] !== undefined) totals[p.payer]++; });
             const maxVal = Math.max(...Object.values(totals), 1);
 
-            // Render Grafico
-            members.forEach(member => {
-                const count = totals[member.name];
-                const percentage = (count / maxVal) * 100;
-                chartContainer.innerHTML += `
-                    <div class="stat-row">
-                        <div class="stat-name">${member.name}</div>
-                        <div class="bar-container">
-                            <div class="bar-fill" style="width: ${percentage}%; background-color: ${member.color};"></div>
-                        </div>
-                        <div class="stat-count">${count}</div>
-                    </div>`;
+            members.forEach(m => {
+                const count = totals[m.name]; const percentage = (count / maxVal) * 100;
+                chartContainer.innerHTML += `<div class="stat-row"><div class="stat-name">${m.name}</div><div class="bar-container"><div class="bar-fill" style="width: ${percentage}%; background-color: ${m.color};"></div></div><div class="stat-count">${count}</div></div>`;
             });
 
-            // Render Storico (con tasto Delete solo sul primo elemento se non filtrato)
-            // Se stiamo guardando "Tutto" o l'anno corrente, possiamo cancellare l'ultimo inserimento
-            const currentYear = new Date().getFullYear().toString();
-            const yearFilterVal = document.getElementById('yearFilter').value;
-            const canDelete = (yearFilterVal === 'all' || yearFilterVal === currentYear);
-
-            // Mostriamo solo gli ultimi 15 pagamenti nella lista
-            filteredPayments.slice(0, 15).forEach((p, index) => {
-                const d = new Date(p.date);
-                const dateStr = d.toLocaleDateString('it-IT');
-                const member = members.find(m => m.name === p.payer);
-                const color = member ? member.color : '#000';
-                
-                let deleteBtn = '';
-                // Il tasto cestino appare SOLO sul primo elemento della lista (index 0)
-                // e SOLO se stiamo visualizzando i dati più recenti (non uno storico vecchio)
-                if (index === 0 && canDelete) {
-                    deleteBtn = `<button onclick="deleteLastEntry()" class="delete-btn" title="Elimina ultima riga dal foglio">🗑️ Cancella</button>`;
-                }
-
-                historyList.innerHTML += `
-                    <li class="history-item">
-                        <div style="display:flex; align-items:center;">
-                            <span class="history-date">${dateStr}</span>
-                            <span class="history-name" style="color: ${color}; margin-left:10px;">${p.payer}</span>
-                        </div>
-                        ${deleteBtn}
-                    </li>`;
+            payments.slice(0, 10).forEach(p => {
+                const d = new Date(p.date); const member = members.find(m => m.name === p.payer);
+                historyList.innerHTML += `<li class="history-item"><span class="history-date">${d.toLocaleDateString('it-IT')}</span><span class="history-name" style="color: ${member ? member.color : '#000'}">${p.payer}</span></li>`;
             });
         }
 
-        // --- EXPORT CSV ---
-        function exportCSV() {
-            // Intestazione CSV
-            let csvContent = "data:text/csv;charset=utf-8,Data,Chi ha pagato\n";
-            
-            // Aggiungi righe
-            filteredPayments.forEach(p => {
-                const d = new Date(p.date);
-                const dateStr = d.toLocaleDateString('it-IT'); // Formato GG/MM/AAAA per Excel italiano
-                csvContent += `${dateStr},${p.payer}\n`;
-            });
-
-            // Crea link nascosto e cliccalo
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "sala_prove_export.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        function showLoader(show) {
-            document.getElementById('loader').style.display = show ? 'block' : 'none';
-        }
-
-        // Avvio
-        fetchData();
-
+        function showLoader(show) { document.getElementById('loader').style.display = show ? 'block' : 'none'; }
     </script>
 </body>
 </html>
-
-
