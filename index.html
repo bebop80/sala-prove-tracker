@@ -138,10 +138,10 @@
         <h2>Storico Recente</h2>
         <ul class="history-list" id="historyList"></ul>
     </div>
-
-    <script>
+   <script>
         // --- INCOLLA QUI IL TUO NUOVO URL GOOGLE SCRIPT ---
-        const GOOGLE_SCRIPT_URL = https://script.google.com/macros/s/AKfycbxi8qGHc16aK0qgmPVv3OwAn8BKSUkV4qSlKsFEsKuv3SaNrZhlv4bbMgkGx7SrUQF6/exec; 
+        // NOTA: Le virgolette " " attorno al link sono FONDAMENTALI!
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxi8qGHc16aK0qgmPVv3OwAn8BKSUkV4qSlKsFEsKuv3SaNrZhlv4bbMgkGx7SrUQF6/exec"; 
         
         // --- GESTIONE SALE PROVE (PUOI AGGIUNGERE/RIMUOVERE SALE QUI) ---
         const saleProve = [
@@ -172,8 +172,7 @@
 
         function fetchData() {
             showLoader(true);
-            if(GOOGLE_SCRIPT_URL.includes(https://script.google.com/macros/s/AKfycbxi8qGHc16aK0qgmPVv3OwAn8BKSUkV4qSlKsFEsKuv3SaNrZhlv4bbMgkGx7SrUQF6/exec)) return showLoader(false);
-
+            
             fetch(GOOGLE_SCRIPT_URL)
             .then(res => res.json())
             .then(data => {
@@ -194,32 +193,27 @@
             if(!dateStr) return "";
             const d = new Date(dateStr);
             const options = { weekday: 'long', day: 'numeric', month: 'long' };
-            // Formatta e mette la lettera maiuscola (es. "giovedì 24 marzo" -> "Giovedì 24 marzo")
             let formatted = d.toLocaleDateString('it-IT', options);
             return formatted.charAt(0).toUpperCase() + formatted.slice(1);
         }
 
         function updateNextRehearsalUI(nextData) {
             if (!nextData || !nextData.date) {
-                // Se non c'è nessuna prova in programma, mostra direttamente la modifica
                 toggleNextEdit(true);
-                document.getElementById('cancelNextBtn').style.display = 'none'; // Nascondi il tasto annulla
+                document.getElementById('cancelNextBtn').style.display = 'none'; 
             } else {
                 toggleNextEdit(false);
                 document.getElementById('cancelNextBtn').style.display = 'block';
 
-                // Popola la modalità vista
                 document.getElementById('displayNextDate').innerText = formatDataItaliana(nextData.date);
                 
                 const timeStr = (nextData.from || nextData.to) ? `🕒 Dalle ${nextData.from || '--:--'} alle ${nextData.to || '--:--'}` : "";
                 document.getElementById('displayNextTime').innerText = timeStr;
 
-                // Gestione Sala e Google Maps
                 const sala = saleProve.find(s => s.id === nextData.room);
                 if(sala) {
                     document.getElementById('displayNextRoomName').innerText = sala.name;
-                    // Genera link Google Maps
-                    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sala.address)}`;
+                    const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(sala.address)}`;
                     document.getElementById('displayNextMapsLink').href = mapsUrl;
                     document.getElementById('displayNextMapsLink').innerText = sala.address + " (Apri Maps)";
                     document.getElementById('displayNextLocationBox').style.display = 'flex';
@@ -227,7 +221,6 @@
                     document.getElementById('displayNextLocationBox').style.display = 'none';
                 }
 
-                // Popola gli input per la modifica
                 document.getElementById('nextDateInput').value = nextData.date;
                 document.getElementById('nextTimeFrom').value = nextData.from;
                 document.getElementById('nextTimeTo').value = nextData.to;
@@ -244,7 +237,7 @@
             };
 
             showLoader(true);
-            toggleNextEdit(false); // Nascondi temporaneamente
+            toggleNextEdit(false); 
 
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST', mode: 'no-cors',
@@ -298,3 +291,4 @@
     </script>
 </body>
 </html>
+
