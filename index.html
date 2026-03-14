@@ -34,11 +34,12 @@
         }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 14px; }
-        input, select {
+        input, select, textarea {
             width: 100%; padding: 12px; font-size: 16px;
             border: 1px solid #D1D1D6; border-radius: 10px;
             background-color: #fff; appearance: none;
         }
+        textarea { resize: vertical; min-height: 80px; }
         button {
             width: 100%; padding: 14px; background-color: var(--primary-blue);
             color: white; border: none; border-radius: 12px;
@@ -57,11 +58,11 @@
         .stat-count { width: 30px; text-align: right; font-weight: bold; color: var(--text-secondary); }
         .history-list { list-style: none; padding: 0; margin: 0; }
         .history-item {
-            display: flex; justify-content: space-between;
+            display: flex; justify-content: space-between; align-items: center;
             padding: 12px 0; border-bottom: 1px solid #E5E5EA;
         }
         .history-item:last-child { border-bottom: none; }
-        .history-date { color: var(--text-secondary); }
+        .history-date { color: var(--text-secondary); font-size: 14px; margin-bottom: 4px;}
         .history-name { font-weight: 600; }
         #loader { text-align: center; margin: 20px 0; display: none; }
         .spinner {
@@ -78,10 +79,14 @@
         .next-box { background: #F2F2F7; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
         .next-title { font-weight: 700; font-size: 20px; margin: 0 0 5px 0; color: #000; text-transform: capitalize; }
         .next-time { color: #000000; font-size: 15px; margin: 0 0 10px 0; font-weight: 500; }
-        .next-location { display: flex; align-items: flex-start; gap: 8px; font-size: 15px; }
+        .next-location { display: flex; align-items: flex-start; gap: 8px; font-size: 15px; margin-bottom: 10px;}
         .maps-link {
             color: var(--primary-blue); text-decoration: none; font-weight: 500;
             display: block; margin-top: 2px; font-size: 14px;
+        }
+        .notes-box {
+            background: #FFF9C4; padding: 12px; border-radius: 8px; font-size: 14px;
+            color: #333; margin-top: 10px; border-left: 4px solid #FBC02D; font-style: italic;
         }
         .next-turn-badge {
             display: inline-flex; align-items: center; gap: 8px;
@@ -90,13 +95,7 @@
         }
         .next-turn-label { color: var(--text-secondary); font-weight: 400; font-size: 13px; }
         .next-turn-name { font-size: 15px; font-weight: 700; }
-        .delete-last-btn {
-            background: none; border: 1.5px solid #FF3B30; color: #FF3B30;
-            border-radius: 12px; padding: 12px; font-size: 15px;
-            font-weight: 600; cursor: pointer; width: 100%; margin-top: 15px;
-        }
-
-        /* --- NUOVI STILI PER FILTRO, ACCORDION E WHATSAPP --- */
+        
         .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .history-title { 
             font-size: 18px; margin: 0; color: var(--text-secondary); 
@@ -109,11 +108,15 @@
         }
         .history-content { display: block; }
         .history-content.collapsed { display: none; }
-        .whatsapp-btn {
-            background-color: #25D366; color: white; border: none; border-radius: 12px;
-            padding: 14px; width: 100%; font-size: 17px; font-weight: 600; cursor: pointer;
-            margin-top: 15px; display: none; transition: opacity 0.2s;
+        
+        /* STILI CONCERTI */
+        .concert-past { text-decoration: line-through; opacity: 0.6; }
+        .concert-next { 
+            border: 2px solid var(--primary-blue); border-radius: 12px; 
+            padding: 12px; background-color: #E5F1FF; margin: 10px 0;
         }
+        .concert-next .history-date { color: var(--primary-blue); font-weight: bold; }
+        .add-concert-form { background: #F2F2F7; padding: 15px; border-radius: 12px; margin-top: 15px; display: none; }
     </style>
 </head>
 <body>
@@ -121,9 +124,9 @@
     <button onclick="fetchData()" class="refresh-btn">🔄 Aggiorna Dati</button>
     <div id="loader">
         <div class="spinner"></div>
-        <p style="font-size:12px;color:#888;margin-top:10px;">Sincronizzazione...</p>
     </div>
 
+    <!-- PROSSIMA PROVA & NOTE -->
     <div class="card">
         <h2>Prossima Prova 🎸</h2>
         <div id="nextViewMode" style="display:none;">
@@ -137,12 +140,15 @@
                         <a id="displayNextMapsLink" href="#" target="_blank" class="maps-link">Apri su Google Maps</a>
                     </div>
                 </div>
+                <!-- Box Note Extra -->
+                <div id="displayRehearsalNotes" class="notes-box" style="display:none;"></div>
+                
                 <div class="next-turn-badge" id="nextTurnBadge" style="display:none;">
                     <span class="next-turn-label">Tocca pagare a:</span>
                     <span class="next-turn-name" id="nextTurnName"></span>
                 </div>
             </div>
-            <button onclick="toggleNextEdit(true)" style="background-color:#E5E5EA;color:#000;">Modifica Prossima Prova</button>
+            <button onclick="toggleNextEdit(true)" style="background-color:#E5E5EA;color:#000;">Modifica Prossima Prova / Note</button>
         </div>
         <div id="nextEditMode">
             <div class="form-group">
@@ -165,13 +171,48 @@
                     <option value="" selected>Seleziona la sala...</option>
                 </select>
             </div>
+            <!-- Campo Note Modificabile -->
+            <div class="form-group">
+                <label>Note Extra (es. scaletta, chi porta cosa...)</label>
+                <textarea id="nextNotesInput" placeholder="Scrivi qui eventuali note..."></textarea>
+            </div>
             <div class="flex-row">
-                <button onclick="saveNextRehearsal()" style="flex:2;">Salva Programmazione</button>
+                <button onclick="saveNextRehearsal()" style="flex:2;">Salva</button>
                 <button onclick="toggleNextEdit(false)" id="cancelNextBtn" style="flex:1;background-color:#FF3B30;">Annulla</button>
             </div>
         </div>
     </div>
     
+    <!-- HIGHLIGHTS CONCERTI -->
+    <div class="card">
+        <div class="history-header">
+            <h2 class="history-title">Concerti 🎤</h2>
+            <select id="concertYearFilter" class="year-filter" onchange="updateConcertsUI()">
+                <option value="all">Tutti gli anni</option>
+            </select>
+        </div>
+        <ul class="history-list" id="concertsList"></ul>
+        
+        <button onclick="toggleConcertForm()" style="background-color:#E5E5EA; color:#000; margin-top:15px; font-size:15px;">➕ Aggiungi Concerto</button>
+        
+        <div id="addConcertForm" class="add-concert-form">
+            <div class="form-group">
+                <label>Data del concerto</label>
+                <input type="date" id="concertDate">
+            </div>
+            <div class="form-group">
+                <label>Nome Locale / Evento</label>
+                <input type="text" id="concertName" placeholder="Es. Legend Club">
+            </div>
+            <div class="form-group">
+                <label>Città o Indirizzo completo</label>
+                <input type="text" id="concertAddress" placeholder="Es. Via Enrico Fermi 98, Milano">
+            </div>
+            <button onclick="saveConcert()">Salva Concerto</button>
+        </div>
+    </div>
+
+    <!-- PAGAMENTO -->
     <div class="card">
         <h2>Nuovo Pagamento Effettuato</h2>
         <div class="form-group">
@@ -190,34 +231,30 @@
             </select>
         </div>
         <button id="saveBtn" onclick="sendPayment()">Aggiungi Pagamento</button>
-        
-        <!-- NUOVO: Pulsante WhatsApp nascosto finché non viene salvato con successo un pagamento -->
-        <button id="whatsappBtn" class="whatsapp-btn" onclick="shareWhatsApp()">Condividi su WhatsApp 💬</button>
     </div>
     
+    <!-- RIEPILOGO -->
     <div class="card">
         <h2>Riepilogo</h2>
         <div id="chartContainer"></div>
     </div>
     
+    <!-- STORICO PAGAMENTI -->
     <div class="card">
-        <!-- NUOVO: Intestazione Storico con Accordion (Cliccabile) e Filtro Anni -->
         <div class="history-header">
-            <h2 class="history-title" onclick="toggleHistory()">Storico <span id="historyToggleIcon">▼</span></h2>
+            <h2 class="history-title" onclick="toggleHistory()">Storico Pagamenti <span id="historyToggleIcon">▼</span></h2>
             <select id="yearFilter" class="year-filter" onchange="updateHistoryUI()">
                 <option value="all">Tutti gli anni</option>
             </select>
         </div>
         <div id="historyContent" class="history-content">
             <ul class="history-list" id="historyList"></ul>
-            <button class="delete-last-btn" id="deleteLastBtn" onclick="deleteLastPayment()" style="display:none;">
-                🗑️ Annulla ultimo pagamento
-            </button>
         </div>
     </div>
 
     <script>
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxi8qGHc16aK0qgmPVv3OwAn8BKSUkV4qSlKsFEsKuv3SaNrZhlv4bbMgkGx7SrUQF6/exec";
+        // ⚠️ INSERISCI QUI IL NUOVO LINK GENERATO DA GOOGLE APPS SCRIPT
+        const GOOGLE_SCRIPT_URL = https://script.google.com/macros/s/AKfycbwq2JUb1xZR3jCYl-klO-AbuwAJHahNnlAstqLofxpbUefCbVzad3zVV2m8aTtCnr-y/exec;
         
         const saleProve = [
             { id: "star_musik", name: "Star-Musik da Claudio", address: "via Luigi Riva, Gallarate" },
@@ -234,7 +271,7 @@
         ];
         
         let payments = [];
-        let lastSavedPayment = null; // Memoria per WhatsApp
+        let concerts = [];
         
         document.getElementById('dateInput').valueAsDate = new Date();
         populateRoomsDropdown();
@@ -253,8 +290,10 @@
                 .then(res => res.json())
                 .then(data => {
                     payments = data.payments || [];
+                    concerts = data.concerts || [];
                     updateUI();
                     updateNextRehearsalUI(data.next);
+                    updateConcertsUI();
                     showLoader(false);
                 })
                 .catch(e => { console.error('Errore:', e); showLoader(false); });
@@ -282,17 +321,18 @@
             return candidati[0];
         }
         
-        function toggleNextEdit(showEdit) {
-            document.getElementById('nextEditMode').style.display = showEdit ? 'block' : 'none';
-            document.getElementById('nextViewMode').style.display = showEdit ? 'none' : 'block';
-        }
-        
         function formatDataItaliana(dateStr) {
             if (!dateStr) return "";
             const d = new Date(dateStr);
-            const options = { weekday: 'long', day: 'numeric', month: 'long' };
+            const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
             let formatted = d.toLocaleDateString('it-IT', options);
             return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+        }
+
+        /* GESTIONE PROSSIMA PROVA & NOTE */
+        function toggleNextEdit(showEdit) {
+            document.getElementById('nextEditMode').style.display = showEdit ? 'block' : 'none';
+            document.getElementById('nextViewMode').style.display = showEdit ? 'none' : 'block';
         }
 
         function updateNextRehearsalUI(nextData) {
@@ -307,6 +347,13 @@
             document.getElementById('nextViewMode').style.display = 'block';
 
             document.getElementById('displayNextDate').textContent = formatDataItaliana(nextData.date);
+            
+            // Popola l'input edit mode con le info attuali
+            document.getElementById('nextDateInput').value = nextData.date ? nextData.date.substring(0,10) : '';
+            document.getElementById('nextTimeFrom').value = nextData.from || '';
+            document.getElementById('nextTimeTo').value = nextData.to || '';
+            document.getElementById('nextRoomSelect').value = nextData.room || '';
+            document.getElementById('nextNotesInput').value = nextData.notes || '';
 
             const fromTime = nextData.from || '';
             const toTime   = nextData.to   || '';
@@ -324,6 +371,16 @@
                 locationBox.style.display = 'none';
             }
 
+            // Mostra Note se presenti
+            const notesBox = document.getElementById('displayRehearsalNotes');
+            if (nextData.notes && nextData.notes.trim() !== "") {
+                // Sostituisce i ritorni a capo per farli vedere in HTML
+                notesBox.innerHTML = `<strong>Note:</strong><br>` + nextData.notes.replace(/\n/g, '<br>');
+                notesBox.style.display = 'block';
+            } else {
+                notesBox.style.display = 'none';
+            }
+
             const turno = calcolaTurno();
             const badge = document.getElementById('nextTurnBadge');
             if (turno) {
@@ -334,7 +391,124 @@
                 badge.style.display = 'none';
             }
         }
-        
+
+        function saveNextRehearsal() {
+            const next = {
+                date: document.getElementById('nextDateInput').value,
+                from: document.getElementById('nextTimeFrom').value,
+                to:   document.getElementById('nextTimeTo').value,
+                room: document.getElementById('nextRoomSelect').value,
+                notes: document.getElementById('nextNotesInput').value
+            };
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ type: 'next_rehearsal', next })
+            }).then(() => fetchData()).catch(() => alert('Errore di rete.'));
+        }
+
+        /* GESTIONE CONCERTI */
+        function toggleConcertForm() {
+            const form = document.getElementById('addConcertForm');
+            form.style.display = form.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function updateConcertsUI() {
+            const list = document.getElementById('concertsList');
+            const yearFilter = document.getElementById('concertYearFilter');
+            list.innerHTML = '';
+            
+            // Ordina concerti dal più vecchio al più recente
+            concerts.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            // Filtro Anni per Concerti
+            const years = [...new Set(concerts.map(c => {
+                if(c.date) return c.date.substring(0,4);
+                return null;
+            }).filter(y => y))].sort().reverse();
+            
+            const currentSelection = yearFilter.value;
+            yearFilter.innerHTML = '<option value="all">Tutti gli anni</option>';
+            years.forEach(y => { yearFilter.innerHTML += `<option value="${y}">${y}</option>`; });
+            if (years.includes(currentSelection)) yearFilter.value = currentSelection;
+
+            const today = new Date();
+            today.setHours(0,0,0,0); // Azzera orario per confrontare solo i giorni
+
+            // Trova il prossimo concerto (il primo con data >= oggi)
+            let nextConcertId = null;
+            for(let c of concerts) {
+                if(new Date(c.date) >= today) {
+                    nextConcertId = c.id;
+                    break;
+                }
+            }
+
+            let filtered = concerts;
+            if (yearFilter.value !== 'all') {
+                filtered = concerts.filter(c => c.date && c.date.startsWith(yearFilter.value));
+            }
+
+            filtered.forEach(c => {
+                const li = document.createElement('li');
+                li.className = 'history-item';
+                
+                const cDate = new Date(c.date);
+                const isPast = cDate < today;
+                const isNext = (c.id === nextConcertId);
+
+                if(isPast) li.classList.add('concert-past');
+                if(isNext) li.classList.add('concert-next');
+
+                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.address)}`;
+                
+                // Lo stile del testo cambia se è la prossima data
+                const titleStyle = isNext ? `font-size:18px; color:var(--primary-blue);` : `font-size:15px;`;
+
+                li.innerHTML = `
+                    <div style="flex-grow:1;">
+                        <div class="history-date">${formatDataItaliana(c.date)}</div>
+                        <div style="font-weight:700; margin-bottom:4px; ${titleStyle}">${c.name} ${isNext ? '⭐' : ''}</div>
+                        <a href="${mapsUrl}" target="_blank" class="maps-link">📍 ${c.address}</a>
+                    </div>
+                    <button onclick="deleteConcert('${c.id}')" style="background:none; color:#FF3B30; padding:10px; width:auto; font-size:18px;">🗑️</button>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        function saveConcert() {
+            const date = document.getElementById('concertDate').value;
+            const name = document.getElementById('concertName').value;
+            const address = document.getElementById('concertAddress').value;
+            
+            if(!date || !name) { alert("Data e Nome locale sono obbligatori!"); return; }
+
+            const id = 'conc_' + Date.now(); // Crea un ID univoco
+
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ 
+                    type: 'add_concert', 
+                    concert: { id, date, name, address } 
+                })
+            }).then(() => {
+                document.getElementById('concertDate').value = '';
+                document.getElementById('concertName').value = '';
+                document.getElementById('concertAddress').value = '';
+                toggleConcertForm();
+                fetchData();
+            }).catch(() => alert('Errore di rete.'));
+        }
+
+        function deleteConcert(id) {
+            if(!confirm("Vuoi davvero eliminare questo concerto?")) return;
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ type: 'delete_concert', id: id })
+            }).then(() => fetchData()).catch(() => alert('Errore di rete.'));
+        }
+
+        /* PAGAMENTI E GRAFICI */
         function updateUI() {
             const chartContainer = document.getElementById('chartContainer');
             chartContainer.innerHTML = '';
@@ -356,7 +530,6 @@
                 chartContainer.appendChild(row);
             });
 
-            // Popola filtro anni
             const yearFilter = document.getElementById('yearFilter');
             const currentSelection = yearFilter.value;
             yearFilter.innerHTML = '<option value="all">Tutti gli anni</option>';
@@ -365,20 +538,14 @@
                 return null;
             }).filter(y => y))].sort().reverse();
             
-            years.forEach(y => {
-                yearFilter.innerHTML += `<option value="${y}">${y}</option>`;
-            });
-            if (years.includes(currentSelection)) {
-                yearFilter.value = currentSelection;
-            }
+            years.forEach(y => { yearFilter.innerHTML += `<option value="${y}">${y}</option>`; });
+            if (years.includes(currentSelection)) yearFilter.value = currentSelection;
 
             updateHistoryUI();
         }
 
-        // NUOVA FUNZIONE: Aggiorna solo lo storico coi filtri
         function updateHistoryUI() {
             const historyList = document.getElementById('historyList');
-            const deleteBtn = document.getElementById('deleteLastBtn');
             historyList.innerHTML = '';
             
             const selectedYear = document.getElementById('yearFilter').value;
@@ -393,15 +560,12 @@
                 const member = members.find(m => m.name === p.payer);
                 const color  = member ? member.color : '#000';
                 li.innerHTML = `
-                    <span class="history-date">${formatDataItaliana(p.date)}</span>
+                    <span class="history-date" style="margin:0">${formatDataItaliana(p.date)}</span>
                     <span class="history-name" style="color:${color}">${p.payer}</span>`;
                 historyList.appendChild(li);
             });
-
-            deleteBtn.style.display = payments.length > 0 ? 'block' : 'none';
         }
 
-        // NUOVA FUNZIONE: Chiudi/apri a tendina lo storico
         function toggleHistory() {
             const content = document.getElementById('historyContent');
             const icon = document.getElementById('historyToggleIcon');
@@ -414,9 +578,6 @@
             const payer = document.getElementById('payerInput').value;
             if (!date || !payer) { alert('Seleziona data e chi ha pagato.'); return; }
             
-            // Salva le info correnti per l'invio su WhatsApp
-            lastSavedPayment = { date, payer };
-
             const btn = document.getElementById('saveBtn');
             btn.disabled = true;
             btn.textContent = 'Salvataggio...';
@@ -428,42 +589,8 @@
                 fetchData(); 
                 btn.disabled = false; 
                 btn.textContent = 'Aggiungi Pagamento'; 
-                // Mostra il pulsante per condividere su whatsapp solo dopo successo
-                document.getElementById('whatsappBtn').style.display = 'block'; 
             })
             .catch(() => { alert('Errore di rete.'); btn.disabled = false; btn.textContent = 'Aggiungi Pagamento'; });
-        }
-
-        // NUOVA FUNZIONE: Compila e invia tramite WhatsApp
-        function shareWhatsApp() {
-            if (!lastSavedPayment) return;
-            const dataFormattata = formatDataItaliana(lastSavedPayment.date);
-            const testo = `🎵 Ciao! Ho appena registrato un pagamento per la sala prove.\n📅 Data: ${dataFormattata}\n💰 Ha pagato: ${lastSavedPayment.payer}`;
-            const url = `https://wa.me/?text=${encodeURIComponent(testo)}`;
-            window.open(url, '_blank');
-        }
-
-        function saveNextRehearsal() {
-            const next = {
-                date: document.getElementById('nextDateInput').value,
-                from: document.getElementById('nextTimeFrom').value,
-                to:   document.getElementById('nextTimeTo').value,
-                room: document.getElementById('nextRoomSelect').value
-            };
-            fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify({ type: 'next_rehearsal', next })
-            }).then(() => fetchData())
-              .catch(() => alert('Errore di rete.'));
-        }
-
-        function deleteLastPayment() {
-            if (!confirm('Sei sicuro di voler cancellare l\'ultimo pagamento?')) return;
-            fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify({ type: 'delete_last' })
-            }).then(() => fetchData())
-              .catch(() => alert('Errore di rete.'));
         }
 
         function showLoader(show) {
