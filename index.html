@@ -39,7 +39,7 @@
             border: 1px solid #D1D1D6; border-radius: 10px;
             background-color: #fff; appearance: none;
         }
-        textarea { resize: vertical; min-height: 80px; }
+        textarea { resize: vertical; min-height: 100px; font-family: inherit; }
         button {
             width: 100%; padding: 14px; background-color: var(--primary-blue);
             color: white; border: none; border-radius: 12px;
@@ -84,10 +84,13 @@
             color: var(--primary-blue); text-decoration: none; font-weight: 500;
             display: block; margin-top: 2px; font-size: 14px;
         }
+        
+        /* STILE DEDICATO ALLE NOTE */
         .notes-box {
-            background: #FFF9C4; padding: 12px; border-radius: 8px; font-size: 14px;
-            color: #333; margin-top: 10px; border-left: 4px solid #FBC02D; font-style: italic;
+            background: #FFF9C4; padding: 15px; border-radius: 8px; font-size: 15px;
+            color: #333; border-left: 4px solid #FBC02D; line-height: 1.4; min-height: 50px;
         }
+        
         .next-turn-badge {
             display: inline-flex; align-items: center; gap: 8px;
             margin-top: 14px; padding: 9px 16px; border-radius: 20px;
@@ -109,7 +112,6 @@
         .history-content { display: block; }
         .history-content.collapsed { display: none; }
         
-        /* STILI CONCERTI */
         .concert-past { text-decoration: line-through; opacity: 0.6; }
         .concert-next { 
             border: 2px solid var(--primary-blue); border-radius: 12px; 
@@ -126,9 +128,11 @@
         <div class="spinner"></div>
     </div>
 
-    <!-- PROSSIMA PROVA & NOTE -->
+    <!-- PROSSIMA PROVA E NOTE SEPARATE -->
     <div class="card">
         <h2>Prossima Prova 🎸</h2>
+        
+        <!-- PARTE 1: SOLO DATI PROVA -->
         <div id="nextViewMode" style="display:none;">
             <div class="next-box">
                 <div class="next-title" id="displayNextDate">Nessuna data impostata</div>
@@ -140,16 +144,15 @@
                         <a id="displayNextMapsLink" href="#" target="_blank" class="maps-link">Apri su Google Maps</a>
                     </div>
                 </div>
-                <!-- Box Note Extra -->
-                <div id="displayRehearsalNotes" class="notes-box" style="display:none;"></div>
                 
                 <div class="next-turn-badge" id="nextTurnBadge" style="display:none;">
                     <span class="next-turn-label">Tocca pagare a:</span>
                     <span class="next-turn-name" id="nextTurnName"></span>
                 </div>
             </div>
-            <button onclick="toggleNextEdit(true)" style="background-color:#E5E5EA;color:#000;">Modifica Prossima Prova / Note</button>
+            <button onclick="toggleNextEdit(true)" style="background-color:#E5E5EA;color:#000;">Modifica Data/Luogo</button>
         </div>
+        
         <div id="nextEditMode">
             <div class="form-group">
                 <label>Data (Opzionale, clicca per il calendario)</label>
@@ -171,14 +174,26 @@
                     <option value="" selected>Seleziona la sala...</option>
                 </select>
             </div>
-            <!-- Campo Note Modificabile -->
-            <div class="form-group">
-                <label>Note Extra (es. scaletta, chi porta cosa...)</label>
-                <textarea id="nextNotesInput" placeholder="Scrivi qui eventuali note..."></textarea>
-            </div>
             <div class="flex-row">
-                <button onclick="saveNextRehearsal()" style="flex:2;">Salva</button>
+                <button onclick="saveNextRehearsal('rehearsal')" id="saveRehearsalBtn" style="flex:2;">Salva Dati</button>
                 <button onclick="toggleNextEdit(false)" id="cancelNextBtn" style="flex:1;background-color:#FF3B30;">Annulla</button>
+            </div>
+        </div>
+
+        <hr style="border:0; border-top:1px solid #E5E5EA; margin: 20px 0;">
+
+        <!-- PARTE 2: BACHECA NOTE SEPARATA -->
+        <h2>Bacheca Note 📝</h2>
+        <div id="notesViewMode">
+            <div id="displayRehearsalNotes" class="notes-box">Nessuna nota presente...</div>
+            <button onclick="toggleNotesEdit(true)" style="background-color:#FFF9C4; color:#B77904; margin-top:10px; font-size:15px; padding:10px;">✏️ Modifica Note</button>
+        </div>
+        
+        <div id="notesEditMode" style="display:none;">
+            <textarea id="notesInputOnly" placeholder="Scrivi qui eventuali note per la band..."></textarea>
+            <div class="flex-row" style="margin-top:10px;">
+                <button onclick="saveNextRehearsal('notes')" id="saveNotesBtn" style="flex:2; background-color:#FF9500;">Salva Note</button>
+                <button onclick="toggleNotesEdit(false)" style="flex:1;background-color:#FF3B30;">Annulla</button>
             </div>
         </div>
     </div>
@@ -253,7 +268,6 @@
     </div>
 
     <script>
-        // LINK CORRETTO E FORMATTATO GIUSTO
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwq2JUb1xZR3jCYl-klO-AbuwAJHahNnlAstqLofxpbUefCbVzad3zVV2m8aTtCnr-y/exec";
         
         const saleProve = [
@@ -284,7 +298,6 @@
             });
         }
         
-        // QUI È DOVE HO AGGIUNTO IL TRUCCHETTO ANTI-CACHE PER RECUPERARE SEMPRE I DATI AGGIORNATI
         function fetchData() {
             showLoader(true);
             const noCacheUrl = GOOGLE_SCRIPT_URL + "?t=" + new Date().getTime();
@@ -331,78 +344,108 @@
             return formatted.charAt(0).toUpperCase() + formatted.slice(1);
         }
 
-        /* GESTIONE PROSSIMA PROVA & NOTE */
+        /* GESTIONE UI SEPARATA (PROSSIMA PROVA & NOTE) */
         function toggleNextEdit(showEdit) {
             document.getElementById('nextEditMode').style.display = showEdit ? 'block' : 'none';
             document.getElementById('nextViewMode').style.display = showEdit ? 'none' : 'block';
         }
 
+        function toggleNotesEdit(showEdit) {
+            document.getElementById('notesEditMode').style.display = showEdit ? 'block' : 'none';
+            document.getElementById('notesViewMode').style.display = showEdit ? 'none' : 'block';
+        }
+
         function updateNextRehearsalUI(nextData) {
-            if (!nextData || !nextData.date) {
+            const data = nextData || {};
+            
+            // Compila in automatico i campi nascosti per poterli salvare in modo unito
+            document.getElementById('nextDateInput').value = data.date ? data.date.substring(0,10) : '';
+            document.getElementById('nextTimeFrom').value = data.from || '';
+            document.getElementById('nextTimeTo').value = data.to || '';
+            document.getElementById('nextRoomSelect').value = data.room || '';
+            document.getElementById('notesInputOnly').value = data.notes || '';
+
+            // Gestione UI Data Prova
+            if (!data.date) {
                 document.getElementById('nextViewMode').style.display = 'none';
                 document.getElementById('nextEditMode').style.display = 'block';
                 document.getElementById('cancelNextBtn').style.display = 'none';
-                return;
-            }
-            document.getElementById('cancelNextBtn').style.display = '';
-            document.getElementById('nextEditMode').style.display = 'none';
-            document.getElementById('nextViewMode').style.display = 'block';
-
-            document.getElementById('displayNextDate').textContent = formatDataItaliana(nextData.date);
-            
-            document.getElementById('nextDateInput').value = nextData.date ? nextData.date.substring(0,10) : '';
-            document.getElementById('nextTimeFrom').value = nextData.from || '';
-            document.getElementById('nextTimeTo').value = nextData.to || '';
-            document.getElementById('nextRoomSelect').value = nextData.room || '';
-            document.getElementById('nextNotesInput').value = nextData.notes || '';
-
-            const fromTime = nextData.from || '';
-            const toTime   = nextData.to   || '';
-            document.getElementById('displayNextTime').textContent =
-                (fromTime && toTime) ? `🕒 Dalle ${fromTime} alle ${toTime}` : '';
-
-            const sala = saleProve.find(s => s.id === nextData.room);
-            const locationBox = document.getElementById('displayNextLocationBox');
-            if (sala) {
-                document.getElementById('displayNextRoomName').textContent = sala.name;
-                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sala.address)}`;
-                document.getElementById('displayNextMapsLink').href = mapsUrl;
-                locationBox.style.display = 'flex';
             } else {
-                locationBox.style.display = 'none';
+                document.getElementById('cancelNextBtn').style.display = '';
+                document.getElementById('nextEditMode').style.display = 'none';
+                document.getElementById('nextViewMode').style.display = 'block';
+
+                document.getElementById('displayNextDate').textContent = formatDataItaliana(data.date);
+                
+                const fromTime = data.from || '';
+                const toTime   = data.to   || '';
+                document.getElementById('displayNextTime').textContent =
+                    (fromTime && toTime) ? `🕒 Dalle ${fromTime} alle ${toTime}` : '';
+
+                const sala = saleProve.find(s => s.id === data.room);
+                const locationBox = document.getElementById('displayNextLocationBox');
+                if (sala) {
+                    document.getElementById('displayNextRoomName').textContent = sala.name;
+                    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sala.address)}`;
+                    document.getElementById('displayNextMapsLink').href = mapsUrl;
+                    locationBox.style.display = 'flex';
+                } else {
+                    locationBox.style.display = 'none';
+                }
+
+                const turno = calcolaTurno();
+                const badge = document.getElementById('nextTurnBadge');
+                if (turno) {
+                    document.getElementById('nextTurnName').textContent = turno.name;
+                    document.getElementById('nextTurnName').style.color = turno.color;
+                    badge.style.display = 'inline-flex';
+                } else {
+                    badge.style.display = 'none';
+                }
             }
 
+            // Gestione UI Bacheca Note
             const notesBox = document.getElementById('displayRehearsalNotes');
-            if (nextData.notes && nextData.notes.trim() !== "") {
-                notesBox.innerHTML = `<strong>Note:</strong><br>` + nextData.notes.replace(/\n/g, '<br>');
-                notesBox.style.display = 'block';
+            if (data.notes && data.notes.trim() !== "") {
+                notesBox.innerHTML = data.notes.replace(/\n/g, '<br>');
+                notesBox.style.color = '#333';
+                notesBox.style.fontStyle = 'normal';
             } else {
-                notesBox.style.display = 'none';
-            }
-
-            const turno = calcolaTurno();
-            const badge = document.getElementById('nextTurnBadge');
-            if (turno) {
-                document.getElementById('nextTurnName').textContent = turno.name;
-                document.getElementById('nextTurnName').style.color = turno.color;
-                badge.style.display = 'inline-flex';
-            } else {
-                badge.style.display = 'none';
+                notesBox.innerHTML = 'Nessuna nota presente...';
+                notesBox.style.color = '#888';
+                notesBox.style.fontStyle = 'italic';
             }
         }
 
-        function saveNextRehearsal() {
+        // Funzione Unica Intelligente: salva tutto prendendo i dati dai vari riquadri
+        function saveNextRehearsal(source) {
             const next = {
                 date: document.getElementById('nextDateInput').value,
                 from: document.getElementById('nextTimeFrom').value,
                 to:   document.getElementById('nextTimeTo').value,
                 room: document.getElementById('nextRoomSelect').value,
-                notes: document.getElementById('nextNotesInput').value
+                notes: document.getElementById('notesInputOnly').value
             };
+
+            let btn = source === 'notes' ? document.getElementById('saveNotesBtn') : document.getElementById('saveRehearsalBtn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Salvataggio...';
+
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
                 body: JSON.stringify({ type: 'next_rehearsal', next })
-            }).then(() => fetchData()).catch(() => alert('Errore di rete.'));
+            }).then(() => {
+                btn.disabled = false;
+                btn.textContent = originalText;
+                if(source === 'notes') toggleNotesEdit(false);
+                else toggleNextEdit(false);
+                fetchData();
+            }).catch(() => {
+                alert('Errore di rete.');
+                btn.disabled = false;
+                btn.textContent = originalText;
+            });
         }
 
         /* GESTIONE CONCERTI */
