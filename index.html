@@ -253,8 +253,8 @@
     </div>
 
     <script>
-        // ⚠️ INSERISCI QUI IL NUOVO LINK GENERATO DA GOOGLE APPS SCRIPT
-        const GOOGLE_SCRIPT_URL = https://script.google.com/macros/s/AKfycbwq2JUb1xZR3jCYl-klO-AbuwAJHahNnlAstqLofxpbUefCbVzad3zVV2m8aTtCnr-y/exec
+        // LINK CORRETTO E FORMATTATO GIUSTO
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwq2JUb1xZR3jCYl-klO-AbuwAJHahNnlAstqLofxpbUefCbVzad3zVV2m8aTtCnr-y/exec";
         
         const saleProve = [
             { id: "star_musik", name: "Star-Musik da Claudio", address: "via Luigi Riva, Gallarate" },
@@ -284,9 +284,11 @@
             });
         }
         
+        // QUI È DOVE HO AGGIUNTO IL TRUCCHETTO ANTI-CACHE PER RECUPERARE SEMPRE I DATI AGGIORNATI
         function fetchData() {
             showLoader(true);
-            fetch(GOOGLE_SCRIPT_URL)
+            const noCacheUrl = GOOGLE_SCRIPT_URL + "?t=" + new Date().getTime();
+            fetch(noCacheUrl)
                 .then(res => res.json())
                 .then(data => {
                     payments = data.payments || [];
@@ -348,7 +350,6 @@
 
             document.getElementById('displayNextDate').textContent = formatDataItaliana(nextData.date);
             
-            // Popola l'input edit mode con le info attuali
             document.getElementById('nextDateInput').value = nextData.date ? nextData.date.substring(0,10) : '';
             document.getElementById('nextTimeFrom').value = nextData.from || '';
             document.getElementById('nextTimeTo').value = nextData.to || '';
@@ -371,10 +372,8 @@
                 locationBox.style.display = 'none';
             }
 
-            // Mostra Note se presenti
             const notesBox = document.getElementById('displayRehearsalNotes');
             if (nextData.notes && nextData.notes.trim() !== "") {
-                // Sostituisce i ritorni a capo per farli vedere in HTML
                 notesBox.innerHTML = `<strong>Note:</strong><br>` + nextData.notes.replace(/\n/g, '<br>');
                 notesBox.style.display = 'block';
             } else {
@@ -417,10 +416,8 @@
             const yearFilter = document.getElementById('concertYearFilter');
             list.innerHTML = '';
             
-            // Ordina concerti dal più vecchio al più recente
             concerts.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-            // Filtro Anni per Concerti
             const years = [...new Set(concerts.map(c => {
                 if(c.date) return c.date.substring(0,4);
                 return null;
@@ -432,9 +429,8 @@
             if (years.includes(currentSelection)) yearFilter.value = currentSelection;
 
             const today = new Date();
-            today.setHours(0,0,0,0); // Azzera orario per confrontare solo i giorni
+            today.setHours(0,0,0,0);
 
-            // Trova il prossimo concerto (il primo con data >= oggi)
             let nextConcertId = null;
             for(let c of concerts) {
                 if(new Date(c.date) >= today) {
@@ -460,8 +456,6 @@
                 if(isNext) li.classList.add('concert-next');
 
                 const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.address)}`;
-                
-                // Lo stile del testo cambia se è la prossima data
                 const titleStyle = isNext ? `font-size:18px; color:var(--primary-blue);` : `font-size:15px;`;
 
                 li.innerHTML = `
@@ -483,7 +477,7 @@
             
             if(!date || !name) { alert("Data e Nome locale sono obbligatori!"); return; }
 
-            const id = 'conc_' + Date.now(); // Crea un ID univoco
+            const id = 'conc_' + Date.now();
 
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
