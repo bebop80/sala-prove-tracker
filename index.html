@@ -28,111 +28,61 @@
             background: var(--card-bg); border-radius: 16px; padding: 20px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px;
         }
-        h2 {
-            font-size: 18px; margin: 0 0 15px 0; color: var(--text-secondary);
-            text-transform: uppercase; font-weight: 600;
-        }
+        h2 { font-size: 18px; margin: 0 0 15px 0; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 14px; }
-        input, select, textarea {
-            width: 100%; padding: 12px; font-size: 16px;
-            border: 1px solid #D1D1D6; border-radius: 10px;
-            background-color: #fff; appearance: none;
-        }
+        input, select, textarea { width: 100%; padding: 12px; font-size: 16px; border: 1px solid #D1D1D6; border-radius: 10px; background-color: #fff; appearance: none; }
         textarea { resize: vertical; min-height: 100px; font-family: inherit; }
-        button {
-            width: 100%; padding: 14px; background-color: var(--primary-blue);
-            color: white; border: none; border-radius: 12px;
-            font-size: 17px; font-weight: 600; cursor: pointer; transition: opacity 0.2s;
-        }
+        button { width: 100%; padding: 14px; background-color: var(--primary-blue); color: white; border: none; border-radius: 12px; font-size: 17px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
         button:disabled { opacity: 0.5; cursor: not-allowed; }
         .flex-row { display: flex; gap: 10px; margin-bottom: 15px; }
         .flex-col { flex: 1; }
         .stat-row { display: flex; align-items: center; margin-bottom: 12px; }
         .stat-name { width: 90px; font-size: 15px; font-weight: 500; }
-        .bar-container {
-            flex-grow: 1; background-color: #E5E5EA; height: 20px;
-            border-radius: 6px; overflow: hidden; margin-right: 10px;
-        }
+        .bar-container { flex-grow: 1; background-color: #E5E5EA; height: 20px; border-radius: 6px; overflow: hidden; margin-right: 10px; }
         .bar-fill { height: 100%; width: 0%; transition: width 0.5s ease-out; border-radius: 6px; }
         .stat-count { width: 30px; text-align: right; font-weight: bold; color: var(--text-secondary); }
         .history-list { list-style: none; padding: 0; margin: 0; }
-        .history-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 12px 0; border-bottom: 1px solid #E5E5EA;
-        }
+        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #E5E5EA; }
         .history-item:last-child { border-bottom: none; }
         .history-date { color: var(--text-secondary); font-size: 14px; margin-bottom: 4px;}
         .history-name { font-weight: 600; }
         #loader { text-align: center; margin: 20px 0; display: none; }
-        .spinner {
-            border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-blue);
-            border-radius: 50%; width: 30px; height: 30px;
-            animation: spin 1s linear infinite; margin: 0 auto;
-        }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-blue); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .refresh-btn {
-            background: none; border: none; color: var(--primary-blue);
-            font-size: 14px; margin-bottom: 10px; cursor: pointer;
-            text-align: center; width: 100%;
-        }
+        .refresh-btn { background: none; border: none; color: var(--primary-blue); font-size: 14px; margin-bottom: 10px; cursor: pointer; text-align: center; width: 100%; }
         .next-box { background: #F2F2F7; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
         .next-title { font-weight: 700; font-size: 20px; margin: 0 0 5px 0; color: #000; text-transform: capitalize; }
         .next-time { color: #000000; font-size: 15px; margin: 0 0 10px 0; font-weight: 500; }
         .next-location { display: flex; align-items: flex-start; gap: 8px; font-size: 15px; margin-bottom: 10px;}
-        .maps-link {
-            color: var(--primary-blue); text-decoration: none; font-weight: 500;
-            display: block; margin-top: 2px; font-size: 14px;
-        }
-        
-        /* STILE DEDICATO ALLE NOTE */
-        .notes-box {
-            background: #FFF9C4; padding: 15px; border-radius: 8px; font-size: 15px;
-            color: #333; border-left: 4px solid #FBC02D; line-height: 1.4; min-height: 50px;
-        }
-        
-        .next-turn-badge {
-            display: inline-flex; align-items: center; gap: 8px;
-            margin-top: 14px; padding: 9px 16px; border-radius: 20px;
-            background-color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.10);
-        }
+        .maps-link { color: var(--primary-blue); text-decoration: none; font-weight: 500; display: block; margin-top: 2px; font-size: 14px; }
+        .notes-box { background: #FFF9C4; padding: 15px; border-radius: 8px; font-size: 15px; color: #333; border-left: 4px solid #FBC02D; line-height: 1.4; min-height: 50px; }
+        .next-turn-badge { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; padding: 9px 16px; border-radius: 20px; background-color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.10); }
         .next-turn-label { color: var(--text-secondary); font-weight: 400; font-size: 13px; }
         .next-turn-name { font-size: 15px; font-weight: 700; }
-        
         .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .history-title { 
-            font-size: 18px; margin: 0; color: var(--text-secondary); 
-            text-transform: uppercase; font-weight: 600; cursor: pointer; 
-            display: flex; align-items: center; gap: 8px; 
-        }
-        .year-filter { 
-            padding: 6px 12px; border-radius: 8px; border: 1px solid #D1D1D6; 
-            font-size: 14px; background: white; font-weight: 600; width: auto; 
-        }
+        .history-title { font-size: 18px; margin: 0; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .year-filter { padding: 6px 12px; border-radius: 8px; border: 1px solid #D1D1D6; font-size: 14px; background: white; font-weight: 600; width: auto; }
         .history-content { display: block; }
         .history-content.collapsed { display: none; }
-        
         .concert-past { text-decoration: line-through; opacity: 0.6; }
-        .concert-next { 
-            border: 2px solid var(--primary-blue); border-radius: 12px; 
-            padding: 12px; background-color: #E5F1FF; margin: 10px 0;
-        }
+        .concert-next { border: 2px solid var(--primary-blue); border-radius: 12px; padding: 12px; background-color: #E5F1FF; margin: 10px 0; }
         .concert-next .history-date { color: var(--primary-blue); font-weight: bold; }
         .add-concert-form { background: #F2F2F7; padding: 15px; border-radius: 12px; margin-top: 15px; display: none; }
+        
+        /* Box aggiunta sala prove */
+        .new-room-box { background: #E5E5EA; padding: 15px; border-radius: 12px; margin-top: 10px; display: none; }
     </style>
 </head>
 <body>
     <h1>Sala Prove Tracker ☁️</h1>
     <button onclick="fetchData()" class="refresh-btn">🔄 Aggiorna Dati</button>
-    <div id="loader">
-        <div class="spinner"></div>
-    </div>
+    <div id="loader"><div class="spinner"></div></div>
 
     <!-- PROSSIMA PROVA E NOTE SEPARATE -->
     <div class="card">
         <h2>Prossima Prova 🎸</h2>
         
-        <!-- PARTE 1: SOLO DATI PROVA -->
         <div id="nextViewMode" style="display:none;">
             <div class="next-box">
                 <div class="next-title" id="displayNextDate">Nessuna data impostata</div>
@@ -144,7 +94,6 @@
                         <a id="displayNextMapsLink" href="#" target="_blank" class="maps-link">Apri su Google Maps</a>
                     </div>
                 </div>
-                
                 <div class="next-turn-badge" id="nextTurnBadge" style="display:none;">
                     <span class="next-turn-label">Tocca pagare a:</span>
                     <span class="next-turn-name" id="nextTurnName"></span>
@@ -155,26 +104,38 @@
         
         <div id="nextEditMode">
             <div class="form-group">
-                <label>Data (Opzionale, clicca per il calendario)</label>
+                <label>Data</label>
                 <input type="date" id="nextDateInput">
             </div>
             <div class="flex-row">
                 <div class="flex-col">
-                    <label>Dalle ore</label>
+                    <label>Dalle</label>
                     <input type="time" id="nextTimeFrom">
                 </div>
                 <div class="flex-col">
-                    <label>Alle ore</label>
+                    <label>Alle</label>
                     <input type="time" id="nextTimeTo">
                 </div>
             </div>
             <div class="form-group">
                 <label>Sala Prove</label>
-                <select id="nextRoomSelect">
-                    <option value="" selected>Seleziona la sala...</option>
+                <select id="nextRoomSelect" onchange="handleRoomSelectChange()">
+                    <!-- Popolato dinamicamente -->
                 </select>
+                
+                <!-- Box nascosto per aggiungere una nuova sala -->
+                <div id="newRoomForm" class="new-room-box">
+                    <label>Nome Sala (se vuoto, sarà "Sala 1", ecc...)</label>
+                    <input type="text" id="newRoomName" placeholder="Es. Garage di Marco">
+                    <label style="margin-top:10px;">Indirizzo (opzionale)</label>
+                    <input type="text" id="newRoomAddress" placeholder="Es. Via Roma 1, Milano">
+                    <div class="flex-row" style="margin-top:15px; margin-bottom:0;">
+                        <button onclick="saveNewRoom()" style="flex:2;">Salva Sala</button>
+                        <button onclick="cancelNewRoom()" style="flex:1; background-color:#FF3B30;">Annulla</button>
+                    </div>
+                </div>
             </div>
-            <div class="flex-row">
+            <div class="flex-row" id="mainEditButtons">
                 <button onclick="saveNextRehearsal('rehearsal')" id="saveRehearsalBtn" style="flex:2;">Salva Dati</button>
                 <button onclick="toggleNextEdit(false)" id="cancelNextBtn" style="flex:1;background-color:#FF3B30;">Annulla</button>
             </div>
@@ -182,13 +143,12 @@
 
         <hr style="border:0; border-top:1px solid #E5E5EA; margin: 20px 0;">
 
-        <!-- PARTE 2: BACHECA NOTE SEPARATA -->
+        <!-- BACHECA NOTE -->
         <h2>Bacheca Note 📝</h2>
         <div id="notesViewMode">
             <div id="displayRehearsalNotes" class="notes-box">Nessuna nota presente...</div>
             <button onclick="toggleNotesEdit(true)" style="background-color:#FFF9C4; color:#B77904; margin-top:10px; font-size:15px; padding:10px;">✏️ Modifica Note</button>
         </div>
-        
         <div id="notesEditMode" style="display:none;">
             <textarea id="notesInputOnly" placeholder="Scrivi qui eventuali note per la band..."></textarea>
             <div class="flex-row" style="margin-top:10px;">
@@ -207,35 +167,20 @@
             </select>
         </div>
         <ul class="history-list" id="concertsList"></ul>
-        
         <button onclick="toggleConcertForm()" style="background-color:#E5E5EA; color:#000; margin-top:15px; font-size:15px;">➕ Aggiungi Concerto</button>
-        
         <div id="addConcertForm" class="add-concert-form">
-            <div class="form-group">
-                <label>Data del concerto</label>
-                <input type="date" id="concertDate">
-            </div>
-            <div class="form-group">
-                <label>Nome Locale / Evento</label>
-                <input type="text" id="concertName" placeholder="Es. Legend Club">
-            </div>
-            <div class="form-group">
-                <label>Città o Indirizzo completo</label>
-                <input type="text" id="concertAddress" placeholder="Es. Via Enrico Fermi 98, Milano">
-            </div>
+            <div class="form-group"><label>Data</label><input type="date" id="concertDate"></div>
+            <div class="form-group"><label>Nome Locale</label><input type="text" id="concertName" placeholder="Es. Legend Club"></div>
+            <div class="form-group"><label>Indirizzo</label><input type="text" id="concertAddress" placeholder="Es. Via Roma"></div>
             <button onclick="saveConcert()">Salva Concerto</button>
         </div>
     </div>
 
     <!-- PAGAMENTO -->
     <div class="card">
-        <h2>Nuovo Pagamento Effettuato</h2>
-        <div class="form-group">
-            <label>Data della prova appena passata</label>
-            <input type="date" id="dateInput">
-        </div>
-        <div class="form-group">
-            <label>Chi l'ha pagata?</label>
+        <h2>Nuovo Pagamento</h2>
+        <div class="form-group"><label>Data prova pagata</label><input type="date" id="dateInput"></div>
+        <div class="form-group"><label>Chi l'ha pagata?</label>
             <select id="payerInput">
                 <option value="" disabled selected>Seleziona componente</option>
                 <option value="Andrea">Andrea</option>
@@ -248,53 +193,113 @@
         <button id="saveBtn" onclick="sendPayment()">Aggiungi Pagamento</button>
     </div>
     
-    <!-- RIEPILOGO -->
-    <div class="card">
-        <h2>Riepilogo</h2>
-        <div id="chartContainer"></div>
-    </div>
+    <!-- RIEPILOGO E STORICO -->
+    <div class="card"><h2>Riepilogo</h2><div id="chartContainer"></div></div>
     
-    <!-- STORICO PAGAMENTI -->
     <div class="card">
         <div class="history-header">
             <h2 class="history-title" onclick="toggleHistory()">Storico Pagamenti <span id="historyToggleIcon">▼</span></h2>
-            <select id="yearFilter" class="year-filter" onchange="updateHistoryUI()">
-                <option value="all">Tutti gli anni</option>
-            </select>
+            <select id="yearFilter" class="year-filter" onchange="updateHistoryUI()"><option value="all">Tutti gli anni</option></select>
         </div>
-        <div id="historyContent" class="history-content">
-            <ul class="history-list" id="historyList"></ul>
-        </div>
+        <div id="historyContent" class="history-content"><ul class="history-list" id="historyList"></ul></div>
     </div>
 
     <script>
+        // ⚠️ INSERISCI QUI IL NUOVO LINK APP SCRIPT
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwq2JUb1xZR3jCYl-klO-AbuwAJHahNnlAstqLofxpbUefCbVzad3zVV2m8aTtCnr-y/exec";
         
-        const saleProve = [
+        const saleProveBase = [
             { id: "star_musik", name: "Star-Musik da Claudio", address: "via Luigi Riva, Gallarate" },
             { id: "urban_groove", name: "Urban Groove da Matteo", address: "via Don Gnocchi 6, Cassano Magnago" },
             { id: "decibel", name: "Decibel da Piz", address: "Via Alba, 17, Busto Arsizio" }
         ];
         
         const members = [
-            { name: 'Andrea', color: 'var(--color-andrea)' },
-            { name: 'Marco', color: 'var(--color-marco)' },
-            { name: 'Alberto', color: 'var(--color-alberto)' },
-            { name: 'Max', color: 'var(--color-max)' },
+            { name: 'Andrea', color: 'var(--color-andrea)' }, { name: 'Marco', color: 'var(--color-marco)' },
+            { name: 'Alberto', color: 'var(--color-alberto)' }, { name: 'Max', color: 'var(--color-max)' },
             { name: 'Alessandro', color: 'var(--color-alessandro)' }
         ];
         
         let payments = [];
         let concerts = [];
+        let customRooms = []; 
         
         document.getElementById('dateInput').valueAsDate = new Date();
-        populateRoomsDropdown();
         fetchData();
         
         function populateRoomsDropdown() {
             const select = document.getElementById('nextRoomSelect');
-            saleProve.forEach(sala => {
+            // Salva il valore selezionato prima di ripopolare
+            const currentVal = select.value; 
+            
+            select.innerHTML = `<option value="" selected>Seleziona la sala...</option>`;
+            
+            let allRooms = saleProveBase.concat(customRooms);
+            allRooms.forEach(sala => {
                 select.innerHTML += `<option value="${sala.id}">${sala.name}</option>`;
+            });
+            
+            // Aggiunge l'opzione per crearne una nuova
+            select.innerHTML += `<option value="ADD_NEW" style="font-weight:bold; color:var(--primary-blue);">➕ Aggiungi nuova sala...</option>`;
+            
+            // Ripristina la selezione se esiste
+            if(currentVal && currentVal !== 'ADD_NEW') {
+                select.value = currentVal;
+            }
+        }
+        
+        // Gestione tendina sala
+        function handleRoomSelectChange() {
+            const select = document.getElementById('nextRoomSelect');
+            if (select.value === 'ADD_NEW') {
+                document.getElementById('newRoomForm').style.display = 'block';
+                document.getElementById('nextRoomSelect').style.display = 'none';
+                document.getElementById('mainEditButtons').style.display = 'none';
+            }
+        }
+        
+        function cancelNewRoom() {
+            document.getElementById('newRoomForm').style.display = 'none';
+            document.getElementById('nextRoomSelect').style.display = 'block';
+            document.getElementById('mainEditButtons').style.display = 'flex';
+            document.getElementById('nextRoomSelect').value = "";
+        }
+        
+        // Salvataggio della Nuova Sala personalizzata
+        function saveNewRoom() {
+            let name = document.getElementById('newRoomName').value.trim();
+            let address = document.getElementById('newRoomAddress').value.trim();
+            
+            // Logica Sala 1, Sala 2
+            if (!name) {
+                let maxNum = 0;
+                let allRooms = saleProveBase.concat(customRooms);
+                allRooms.forEach(r => {
+                    let match = r.name.match(/^Sala (\d+)$/);
+                    if (match) {
+                        let num = parseInt(match[1]);
+                        if (num > maxNum) maxNum = num;
+                    }
+                });
+                name = "Sala " + (maxNum + 1);
+            }
+            
+            const newId = 'room_' + Date.now();
+            const newRoomObj = { id: newId, name: name, address: address };
+            
+            showLoader(true);
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ type: 'add_room', room: newRoomObj })
+            }).then(() => {
+                customRooms.push(newRoomObj); // L'aggiunge subito visivamente
+                populateRoomsDropdown();
+                cancelNewRoom();
+                document.getElementById('nextRoomSelect').value = newId; // La seleziona in automatico
+                showLoader(false);
+            }).catch(() => {
+                alert('Errore di salvataggio.');
+                showLoader(false);
             });
         }
         
@@ -306,6 +311,9 @@
                 .then(data => {
                     payments = data.payments || [];
                     concerts = data.concerts || [];
+                    customRooms = data.customRooms || []; // Recupera sale dal DB
+                    
+                    populateRoomsDropdown();
                     updateUI();
                     updateNextRehearsalUI(data.next);
                     updateConcertsUI();
@@ -319,8 +327,7 @@
             const totals = {};
             members.forEach(m => totals[m.name] = 0);
             payments.forEach(p => { if (totals[p.payer] !== undefined) totals[p.payer]++; });
-            let minVal = Infinity;
-            let candidati = [];
+            let minVal = Infinity; let candidati = [];
             members.forEach(m => {
                 if (totals[m.name] < minVal) { minVal = totals[m.name]; candidati = [m]; }
                 else if (totals[m.name] === minVal) { candidati.push(m); }
@@ -344,12 +351,10 @@
             return formatted.charAt(0).toUpperCase() + formatted.slice(1);
         }
 
-        /* GESTIONE UI SEPARATA (PROSSIMA PROVA & NOTE) */
         function toggleNextEdit(showEdit) {
             document.getElementById('nextEditMode').style.display = showEdit ? 'block' : 'none';
             document.getElementById('nextViewMode').style.display = showEdit ? 'none' : 'block';
         }
-
         function toggleNotesEdit(showEdit) {
             document.getElementById('notesEditMode').style.display = showEdit ? 'block' : 'none';
             document.getElementById('notesViewMode').style.display = showEdit ? 'none' : 'block';
@@ -358,14 +363,12 @@
         function updateNextRehearsalUI(nextData) {
             const data = nextData || {};
             
-            // Compila in automatico i campi nascosti per poterli salvare in modo unito
             document.getElementById('nextDateInput').value = data.date ? data.date.substring(0,10) : '';
             document.getElementById('nextTimeFrom').value = data.from || '';
             document.getElementById('nextTimeTo').value = data.to || '';
             document.getElementById('nextRoomSelect').value = data.room || '';
             document.getElementById('notesInputOnly').value = data.notes || '';
 
-            // Gestione UI Data Prova
             if (!data.date) {
                 document.getElementById('nextViewMode').style.display = 'none';
                 document.getElementById('nextEditMode').style.display = 'block';
@@ -376,17 +379,19 @@
                 document.getElementById('nextViewMode').style.display = 'block';
 
                 document.getElementById('displayNextDate').textContent = formatDataItaliana(data.date);
-                
-                const fromTime = data.from || '';
-                const toTime   = data.to   || '';
-                document.getElementById('displayNextTime').textContent =
-                    (fromTime && toTime) ? `🕒 Dalle ${fromTime} alle ${toTime}` : '';
+                const fromTime = data.from || ''; const toTime = data.to || '';
+                document.getElementById('displayNextTime').textContent = (fromTime && toTime) ? `🕒 Dalle ${fromTime} alle ${toTime}` : '';
 
-                const sala = saleProve.find(s => s.id === data.room);
+                // Cerca sia tra quelle di base che in quelle create dall'utente
+                let allRooms = saleProveBase.concat(customRooms);
+                const sala = allRooms.find(s => s.id === data.room);
+                
                 const locationBox = document.getElementById('displayNextLocationBox');
                 if (sala) {
                     document.getElementById('displayNextRoomName').textContent = sala.name;
-                    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sala.address)}`;
+                    // Se l'indirizzo è vuoto, cerca il nome della sala su maps
+                    const mapQuery = sala.address ? sala.address : sala.name;
+                    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
                     document.getElementById('displayNextMapsLink').href = mapsUrl;
                     locationBox.style.display = 'flex';
                 } else {
@@ -399,25 +404,19 @@
                     document.getElementById('nextTurnName').textContent = turno.name;
                     document.getElementById('nextTurnName').style.color = turno.color;
                     badge.style.display = 'inline-flex';
-                } else {
-                    badge.style.display = 'none';
-                }
+                } else { badge.style.display = 'none'; }
             }
 
-            // Gestione UI Bacheca Note
             const notesBox = document.getElementById('displayRehearsalNotes');
             if (data.notes && data.notes.trim() !== "") {
                 notesBox.innerHTML = data.notes.replace(/\n/g, '<br>');
-                notesBox.style.color = '#333';
-                notesBox.style.fontStyle = 'normal';
+                notesBox.style.color = '#333'; notesBox.style.fontStyle = 'normal';
             } else {
                 notesBox.innerHTML = 'Nessuna nota presente...';
-                notesBox.style.color = '#888';
-                notesBox.style.fontStyle = 'italic';
+                notesBox.style.color = '#888'; notesBox.style.fontStyle = 'italic';
             }
         }
 
-        // Funzione Unica Intelligente: salva tutto prendendo i dati dai vari riquadri
         function saveNextRehearsal(source) {
             const next = {
                 date: document.getElementById('nextDateInput').value,
@@ -429,26 +428,17 @@
 
             let btn = source === 'notes' ? document.getElementById('saveNotesBtn') : document.getElementById('saveRehearsalBtn');
             const originalText = btn.textContent;
-            btn.disabled = true;
-            btn.textContent = 'Salvataggio...';
+            btn.disabled = true; btn.textContent = 'Salvataggio...';
 
             fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify({ type: 'next_rehearsal', next })
+                method: 'POST', body: JSON.stringify({ type: 'next_rehearsal', next })
             }).then(() => {
-                btn.disabled = false;
-                btn.textContent = originalText;
-                if(source === 'notes') toggleNotesEdit(false);
-                else toggleNextEdit(false);
+                btn.disabled = false; btn.textContent = originalText;
+                if(source === 'notes') toggleNotesEdit(false); else toggleNextEdit(false);
                 fetchData();
-            }).catch(() => {
-                alert('Errore di rete.');
-                btn.disabled = false;
-                btn.textContent = originalText;
-            });
+            }).catch(() => { alert('Errore di rete.'); btn.disabled = false; btn.textContent = originalText; });
         }
 
-        /* GESTIONE CONCERTI */
         function toggleConcertForm() {
             const form = document.getElementById('addConcertForm');
             form.style.display = form.style.display === 'block' ? 'none' : 'block';
@@ -458,54 +448,29 @@
             const list = document.getElementById('concertsList');
             const yearFilter = document.getElementById('concertYearFilter');
             list.innerHTML = '';
-            
             concerts.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-            const years = [...new Set(concerts.map(c => {
-                if(c.date) return c.date.substring(0,4);
-                return null;
-            }).filter(y => y))].sort().reverse();
-            
+            const years = [...new Set(concerts.map(c => c.date ? c.date.substring(0,4) : null).filter(y => y))].sort().reverse();
             const currentSelection = yearFilter.value;
             yearFilter.innerHTML = '<option value="all">Tutti gli anni</option>';
             years.forEach(y => { yearFilter.innerHTML += `<option value="${y}">${y}</option>`; });
             if (years.includes(currentSelection)) yearFilter.value = currentSelection;
-
-            const today = new Date();
-            today.setHours(0,0,0,0);
-
+            const today = new Date(); today.setHours(0,0,0,0);
             let nextConcertId = null;
-            for(let c of concerts) {
-                if(new Date(c.date) >= today) {
-                    nextConcertId = c.id;
-                    break;
-                }
-            }
-
+            for(let c of concerts) { if(new Date(c.date) >= today) { nextConcertId = c.id; break; } }
             let filtered = concerts;
-            if (yearFilter.value !== 'all') {
-                filtered = concerts.filter(c => c.date && c.date.startsWith(yearFilter.value));
-            }
-
+            if (yearFilter.value !== 'all') { filtered = concerts.filter(c => c.date && c.date.startsWith(yearFilter.value)); }
             filtered.forEach(c => {
-                const li = document.createElement('li');
-                li.className = 'history-item';
-                
+                const li = document.createElement('li'); li.className = 'history-item';
                 const cDate = new Date(c.date);
-                const isPast = cDate < today;
-                const isNext = (c.id === nextConcertId);
-
-                if(isPast) li.classList.add('concert-past');
-                if(isNext) li.classList.add('concert-next');
-
-                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.address)}`;
+                const isPast = cDate < today; const isNext = (c.id === nextConcertId);
+                if(isPast) li.classList.add('concert-past'); if(isNext) li.classList.add('concert-next');
+                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.address || c.name)}`;
                 const titleStyle = isNext ? `font-size:18px; color:var(--primary-blue);` : `font-size:15px;`;
-
                 li.innerHTML = `
                     <div style="flex-grow:1;">
                         <div class="history-date">${formatDataItaliana(c.date)}</div>
                         <div style="font-weight:700; margin-bottom:4px; ${titleStyle}">${c.name} ${isNext ? '⭐' : ''}</div>
-                        <a href="${mapsUrl}" target="_blank" class="maps-link">📍 ${c.address}</a>
+                        <a href="${mapsUrl}" target="_blank" class="maps-link">📍 ${c.address || 'Mappa'}</a>
                     </div>
                     <button onclick="deleteConcert('${c.id}')" style="background:none; color:#FF3B30; padding:10px; width:auto; font-size:18px;">🗑️</button>
                 `;
@@ -517,122 +482,70 @@
             const date = document.getElementById('concertDate').value;
             const name = document.getElementById('concertName').value;
             const address = document.getElementById('concertAddress').value;
-            
-            if(!date || !name) { alert("Data e Nome locale sono obbligatori!"); return; }
-
-            const id = 'conc_' + Date.now();
-
+            if(!date || !name) { alert("Data e Nome locale obbligatori!"); return; }
             fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify({ 
-                    type: 'add_concert', 
-                    concert: { id, date, name, address } 
-                })
+                method: 'POST', body: JSON.stringify({ type: 'add_concert', concert: { id: 'conc_'+Date.now(), date, name, address } })
             }).then(() => {
-                document.getElementById('concertDate').value = '';
-                document.getElementById('concertName').value = '';
-                document.getElementById('concertAddress').value = '';
-                toggleConcertForm();
-                fetchData();
+                document.getElementById('concertDate').value = ''; document.getElementById('concertName').value = ''; document.getElementById('concertAddress').value = '';
+                toggleConcertForm(); fetchData();
             }).catch(() => alert('Errore di rete.'));
         }
 
         function deleteConcert(id) {
-            if(!confirm("Vuoi davvero eliminare questo concerto?")) return;
-            fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify({ type: 'delete_concert', id: id })
+            if(!confirm("Vuoi eliminare questo concerto?")) return;
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'delete_concert', id: id })
             }).then(() => fetchData()).catch(() => alert('Errore di rete.'));
         }
 
-        /* PAGAMENTI E GRAFICI */
         function updateUI() {
             const chartContainer = document.getElementById('chartContainer');
             chartContainer.innerHTML = '';
-            
-            const totals = {};
-            members.forEach(m => totals[m.name] = 0);
+            const totals = {}; members.forEach(m => totals[m.name] = 0);
             payments.forEach(p => { if (totals[p.payer] !== undefined) totals[p.payer]++; });
-            
             const maxVal = Math.max(...Object.values(totals), 1);
             members.forEach(m => {
-                const row = document.createElement('div');
-                row.className = 'stat-row';
-                row.innerHTML = `
-                    <span class="stat-name">${m.name}</span>
-                    <div class="bar-container">
-                        <div class="bar-fill" style="background-color:${m.color};width:${(totals[m.name]/maxVal)*100}%"></div>
-                    </div>
-                    <span class="stat-count">${totals[m.name]}</span>`;
+                const row = document.createElement('div'); row.className = 'stat-row';
+                row.innerHTML = `<span class="stat-name">${m.name}</span><div class="bar-container"><div class="bar-fill" style="background-color:${m.color};width:${(totals[m.name]/maxVal)*100}%"></div></div><span class="stat-count">${totals[m.name]}</span>`;
                 chartContainer.appendChild(row);
             });
-
             const yearFilter = document.getElementById('yearFilter');
             const currentSelection = yearFilter.value;
             yearFilter.innerHTML = '<option value="all">Tutti gli anni</option>';
-            const years = [...new Set(payments.map(p => {
-                if(p.date) return p.date.substring(0,4);
-                return null;
-            }).filter(y => y))].sort().reverse();
-            
+            const years = [...new Set(payments.map(p => p.date ? p.date.substring(0,4) : null).filter(y => y))].sort().reverse();
             years.forEach(y => { yearFilter.innerHTML += `<option value="${y}">${y}</option>`; });
             if (years.includes(currentSelection)) yearFilter.value = currentSelection;
-
             updateHistoryUI();
         }
 
         function updateHistoryUI() {
-            const historyList = document.getElementById('historyList');
-            historyList.innerHTML = '';
-            
+            const historyList = document.getElementById('historyList'); historyList.innerHTML = '';
             const selectedYear = document.getElementById('yearFilter').value;
             let filtered = payments;
-            if (selectedYear !== 'all') {
-                filtered = payments.filter(p => p.date && p.date.startsWith(selectedYear));
-            }
-            
+            if (selectedYear !== 'all') { filtered = payments.filter(p => p.date && p.date.startsWith(selectedYear)); }
             filtered.forEach(p => {
-                const li = document.createElement('li');
-                li.className = 'history-item';
-                const member = members.find(m => m.name === p.payer);
-                const color  = member ? member.color : '#000';
-                li.innerHTML = `
-                    <span class="history-date" style="margin:0">${formatDataItaliana(p.date)}</span>
-                    <span class="history-name" style="color:${color}">${p.payer}</span>`;
+                const li = document.createElement('li'); li.className = 'history-item';
+                const member = members.find(m => m.name === p.payer); const color = member ? member.color : '#000';
+                li.innerHTML = `<span class="history-date" style="margin:0">${formatDataItaliana(p.date)}</span><span class="history-name" style="color:${color}">${p.payer}</span>`;
                 historyList.appendChild(li);
             });
         }
 
         function toggleHistory() {
-            const content = document.getElementById('historyContent');
-            const icon = document.getElementById('historyToggleIcon');
-            content.classList.toggle('collapsed');
-            icon.textContent = content.classList.contains('collapsed') ? '▲' : '▼';
+            const content = document.getElementById('historyContent'); const icon = document.getElementById('historyToggleIcon');
+            content.classList.toggle('collapsed'); icon.textContent = content.classList.contains('collapsed') ? '▲' : '▼';
         }
 
         function sendPayment() {
-            const date  = document.getElementById('dateInput').value;
-            const payer = document.getElementById('payerInput').value;
+            const date = document.getElementById('dateInput').value; const payer = document.getElementById('payerInput').value;
             if (!date || !payer) { alert('Seleziona data e chi ha pagato.'); return; }
-            
-            const btn = document.getElementById('saveBtn');
-            btn.disabled = true;
-            btn.textContent = 'Salvataggio...';
-            
+            const btn = document.getElementById('saveBtn'); btn.disabled = true; btn.textContent = 'Salvataggio...';
             fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify({ type: 'payment', payment: { date, payer } })
-            }).then(() => { 
-                fetchData(); 
-                btn.disabled = false; 
-                btn.textContent = 'Aggiungi Pagamento'; 
-            })
-            .catch(() => { alert('Errore di rete.'); btn.disabled = false; btn.textContent = 'Aggiungi Pagamento'; });
+                method: 'POST', body: JSON.stringify({ type: 'payment', payment: { date, payer } })
+            }).then(() => { fetchData(); btn.disabled = false; btn.textContent = 'Aggiungi Pagamento'; 
+            }).catch(() => { alert('Errore di rete.'); btn.disabled = false; btn.textContent = 'Aggiungi Pagamento'; });
         }
 
-        function showLoader(show) {
-            document.getElementById('loader').style.display = show ? 'block' : 'none';
-        }
+        function showLoader(show) { document.getElementById('loader').style.display = show ? 'block' : 'none'; }
     </script>
 </body>
 </html>
