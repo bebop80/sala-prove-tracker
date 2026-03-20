@@ -430,11 +430,41 @@
         function toggleNextEdit(show) { document.getElementById('nextEditMode').style.display = show?'block':'none'; document.getElementById('nextViewMode').style.display = show?'none':'block'; }
         function toggleNotesEdit(show) { document.getElementById('notesEditMode').style.display = show?'block':'none'; document.getElementById('notesViewMode').style.display = show?'none':'block'; }
         function saveNextRehearsal(source) {
-            const next = { date: document.getElementById('nextDateInput').value, from: document.getElementById('nextTimeFrom').value, to: document.getElementById('nextTimeTo').value, room: document.getElementById('nextRoomSelect').value, notes: document.getElementById('notesInputOnly').value };
-            document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn').textContent = 'Salvataggio...';
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'next_rehearsal', next }) }).then(() => fetchData());
-        }
-
+    const next = { 
+        date: document.getElementById('nextDateInput').value, 
+        from: document.getElementById('nextTimeFrom').value, 
+        to: document.getElementById('nextTimeTo').value, 
+        room: document.getElementById('nextRoomSelect').value, 
+        notes: document.getElementById('notesInputOnly').value 
+    };
+    
+    // Trova il pulsante corretto in base alla fonte della chiamata
+    const buttons = document.querySelectorAll('#nextEditMode button, #notesEditMode button');
+    const saveButton = Array.from(buttons).find(btn => btn.textContent.includes('Salva'));
+    if (saveButton) {
+        saveButton.disabled = true;
+        saveButton.textContent = 'Salvataggio...';
+    }
+    
+    fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'next_rehearsal', next }) })
+        .then(() => { 
+            fetchData(); 
+            // Chiudi il form dopo il salvataggio
+            if (source === 'notes') {
+                toggleNotesEdit(false);
+            } else {
+                toggleNextEdit(false);
+            }
+        })
+        .catch(error => {
+            alert('Errore durante il salvataggio. Riprova.');
+            console.error(error);
+            if (saveButton) {
+                saveButton.disabled = false;
+                saveButton.textContent = source === 'notes' ? 'Salva Note' : 'Salva Dati';
+            }
+        });
+}
         // --- PAGAMENTI E CONDIVISIONE ---
         function sendPayment() {
             const date = document.getElementById('dateInput').value; const payer = document.getElementById('payerInput').value;
