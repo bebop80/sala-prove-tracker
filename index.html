@@ -9,9 +9,8 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px; color: var(--text-main); padding-bottom: 50px; }
         
-        /* Loading Screen (Punto 6) */
         #fullLoader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg-color); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        #appContent { display: none; } /* Nascosto finchè non carica */
+        #appContent { display: none; } 
 
         h1 { text-align: center; font-weight: 800; margin-bottom: 5px; font-size: 28px; cursor:pointer; }
         .edit-hint { text-align:center; font-size:11px; color:var(--text-secondary); margin-bottom:20px; margin-top:-5px;}
@@ -41,7 +40,9 @@
         .next-time { color: #000; font-size: 15px; margin: 0 0 10px 0; font-weight: 500; }
         .maps-link { color: var(--primary-blue); text-decoration: none; font-weight: 600; display: block; margin-top: 10px; font-size: 14px; }
         .notes-box { background: #FFF9C4; padding: 15px; border-radius: 8px; font-size: 15px; color: #333; border-left: 4px solid #FBC02D; line-height: 1.4; min-height: 50px; }
-        .next-turn-badge { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; padding: 9px 16px; border-radius: 20px; background-color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.10); }
+        .next-turn-badge { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; padding: 9px 16px; border-radius: 20px; background-color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.10); justify-content:center;}
+        .next-turn-label { color: var(--text-secondary); font-weight: 400; font-size: 13px; }
+        .next-turn-name { font-size: 15px; font-weight: 700; }
         .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .history-title { font-size: 18px; margin: 0; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
         .year-filter { padding: 6px 12px; border-radius: 8px; border: 1px solid #D1D1D6; font-size: 14px; background: white; font-weight: 600; width: auto; }
@@ -50,19 +51,17 @@
         .concert-next { border: 2px solid var(--primary-blue); border-radius: 12px; padding: 12px; background-color: #E5F1FF; margin: 10px 0; }
         .new-room-box, .manage-box { background: #E5E5EA; padding: 15px; border-radius: 12px; margin-top: 10px; display: none; }
         .icon-btn { background:none; border:none; color:var(--primary-blue); font-size:20px; padding:0; width:auto; margin-left:10px; cursor:pointer;}
+        .delete-last-btn { background: none; border: 1.5px solid #FF3B30; color: #FF3B30; border-radius: 12px; padding: 12px; font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 15px; }
     </style>
 </head>
 <body>
     
-    <!-- Loader Iniziale (Punto 6) -->
     <div id="fullLoader">
         <div class="spinner"></div>
         <p style="margin-top:20px; font-weight:600; color:#555;">Sincronizzazione dati...</p>
     </div>
 
-    <!-- Contenuto App -->
     <div id="appContent">
-        <!-- Titolo Editabile (Punto 7) -->
         <h1 id="bandNameDisplay" onclick="toggleBandSettings(true)">Sala Prove Tracker ☁️</h1>
         <div class="edit-hint">Tocca il nome per personalizzarlo</div>
         
@@ -79,12 +78,9 @@
 
         <button onclick="fetchData()" class="refresh-btn">🔄 Aggiorna Dati</button>
 
-        <!-- PROSSIMA PROVA -->
         <div class="card">
             <h2>Prossima Prova 🎸</h2>
-            <div id="nextViewMode">
-                <!-- Verrà popolato da JS. Se non c'è prova o è passata, dirà "In via di definizione" -->
-            </div>
+            <div id="nextViewMode"></div>
             <div id="nextEditMode" style="display:none;">
                 <div class="form-group"><label>Data</label><input type="date" id="nextDateInput"></div>
                 <div class="flex-row">
@@ -95,7 +91,6 @@
                     <label>Sala Prove</label>
                     <div class="flex-row" style="margin-bottom:0;">
                         <select id="nextRoomSelect" onchange="handleRoomSelectChange()" style="flex:1;"></select>
-                        <!-- Pulsante elimina sala (Punto 3) -->
                         <button id="delRoomBtn" class="icon-btn" style="display:none; color:#FF3B30;" onclick="deleteSelectedRoom()">🗑️</button>
                     </div>
                     
@@ -123,7 +118,6 @@
             </div>
         </div>
         
-        <!-- PAGAMENTO -->
         <div class="card">
             <h2>Registra Pagamento 💰</h2>
             <div class="form-group"><label>Data prova pagata</label><input type="date" id="dateInput"></div>
@@ -136,7 +130,6 @@
             </div>
             <button id="saveBtn" onclick="sendPayment()">Aggiungi Pagamento</button>
 
-            <!-- Box condivisione (Punto 2) -->
             <div id="shareBox" style="display:none; margin-top:20px; background:#F2F2F7; padding:15px; border-radius:12px; text-align:center;">
                 <p style="margin:0 0 10px 0; font-weight:600;">Pagamento registrato! Condividi:</p>
                 <div class="flex-row" style="margin:0;">
@@ -145,7 +138,6 @@
                 </div>
             </div>
 
-            <!-- Box gestione membri (Punto 4) -->
             <div id="manageMembersBox" class="manage-box">
                 <label>Aggiungi Membro</label>
                 <div class="flex-row">
@@ -158,7 +150,6 @@
             </div>
         </div>
         
-        <!-- CONCERTI -->
         <div class="card">
             <div class="history-header"><h2 class="history-title">Concerti 🎤</h2><select id="concertYearFilter" class="year-filter" onchange="updateConcertsUI()"><option value="all">Tutti</option></select></div>
             <ul class="history-list" id="concertsList"></ul>
@@ -171,22 +162,25 @@
             </div>
         </div>
 
-        <!-- RIEPILOGO -->
         <div class="card"><h2>Riepilogo Spese</h2><div id="chartContainer"></div></div>
         
-        <!-- STORICO CHIUSO DI DEFAULT (Punto 5) -->
         <div class="card">
             <div class="history-header">
                 <h2 class="history-title" onclick="toggleHistory()">Storico Pagamenti <span id="historyToggleIcon">▼</span></h2>
                 <select id="yearFilter" class="year-filter" onchange="updateHistoryUI()"><option value="all">Tutti</option></select>
             </div>
-            <!-- Aggiunta classe "collapsed" -->
-            <div id="historyContent" class="history-content collapsed"><ul class="history-list" id="historyList"></ul></div>
+            <div id="historyContent" class="history-content collapsed">
+                <ul class="history-list" id="historyList"></ul>
+                <!-- REINSERITO IL TASTO CANCELLA ULTIMO PAGAMENTO -->
+                <button class="delete-last-btn" id="deleteLastBtn" onclick="deleteLastPayment()" style="display:none;">
+                    🗑️ Annulla ultimo pagamento inserito
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
-        // ⚠️ INCOLLA QUI IL NUOVO LINK
+        // ⚠️ INCOLLA QUI IL NUOVO LINK APP SCRIPT
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwq2JUb1xZR3jCYl-klO-AbuwAJHahNnlAstqLofxpbUefCbVzad3zVV2m8aTtCnr-y/exec";
         
         const saleProveBase = [
@@ -197,14 +191,13 @@
         
         let members = [];
         let payments = []; let concerts = []; let customRooms = []; let settings = {};
-        let rawNextDate = null; // per controlli su data
-        let lastPayment = null; // per condivisione
+        let rawNextDate = null; 
+        let lastPayment = null; 
         
         document.getElementById('dateInput').valueAsDate = new Date();
         fetchData();
         
         function fetchData() {
-            // Mostra loader a tutto schermo (Punto 6)
             document.getElementById('fullLoader').style.display = 'flex';
             document.getElementById('appContent').style.display = 'none';
             
@@ -223,13 +216,11 @@
                     populateRoomsDropdown();
                     updateUI();
                     
-                    // CONTROLLO AUTO-CANCELLAZIONE (Punto 1)
                     rawNextDate = (data.next && data.next.date) ? data.next.date : null;
                     if (rawNextDate) {
                         const nextD = new Date(rawNextDate);
                         const today = new Date(); today.setHours(0,0,0,0);
                         if (nextD < today) {
-                            // Se la data è passata, la svuoto visivamente e avviso il server
                             data.next = {};
                             rawNextDate = null;
                             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'clear_next_rehearsal' }) });
@@ -238,14 +229,13 @@
                     updateNextRehearsalUI(data.next);
                     updateConcertsUI();
                     
-                    // Nascondi loader, mostra App
                     document.getElementById('fullLoader').style.display = 'none';
                     document.getElementById('appContent').style.display = 'block';
                 })
                 .catch(e => { alert('Errore connessione internet'); });
         }
 
-        // --- GESTIONE IMPOSTAZIONI BAND (Punto 7) ---
+        // --- GESTIONE IMPOSTAZIONI BAND ---
         function applySettings() {
             const title = document.getElementById('bandNameDisplay');
             title.textContent = settings.NomeBand || "Sala Prove Tracker ☁️";
@@ -265,7 +255,7 @@
             }).then(() => fetchData());
         }
 
-        // --- GESTIONE MEMBRI (Punto 4) ---
+        // --- GESTIONE MEMBRI ---
         function populateMembers() {
             const select = document.getElementById('payerInput');
             const list = document.getElementById('membersListManage');
@@ -295,7 +285,7 @@
             }
         }
 
-        // --- GESTIONE SALE PROVE (Punto 3) ---
+        // --- GESTIONE SALE PROVE ---
         function populateRoomsDropdown() {
             const select = document.getElementById('nextRoomSelect');
             const currentVal = select.value; 
@@ -313,7 +303,7 @@
                 document.getElementById('newRoomForm').style.display = 'block';
                 select.style.display = 'none'; document.getElementById('mainEditButtons').style.display = 'none'; delBtn.style.display = 'none';
             } else {
-                // Se è una sala custom, mostriamo il cestino
+                // Mostra il cestino solo se la sala è stata aggiunta dall'utente (presente in customRooms)
                 const isCustom = customRooms.find(r => r.id === select.value);
                 delBtn.style.display = isCustom ? 'block' : 'none';
             }
@@ -339,6 +329,28 @@
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'add_room', room: newRoomObj }) }).then(() => fetchData());
         }
 
+        // --- REINSERIMENTO CALCOLO A CHI TOCCA PAGARE ---
+        function calcolaTurno() {
+            if (payments.length === 0 || members.length === 0) return null;
+            const totals = {};
+            members.forEach(m => totals[m.name] = 0);
+            payments.forEach(p => { if (totals[p.payer] !== undefined) totals[p.payer]++; });
+            let minVal = Infinity; let candidati = [];
+            members.forEach(m => {
+                if (totals[m.name] < minVal) { minVal = totals[m.name]; candidati = [m]; }
+                else if (totals[m.name] === minVal) { candidati.push(m); }
+            });
+            if (candidati.length === 1) return candidati[0];
+            for (let i = 0; i < payments.length; i++) {
+                const found = candidati.find(c => c.name === payments[i].payer);
+                if (found) {
+                    candidati = candidati.filter(c => c.name !== found.name);
+                    if (candidati.length === 1) return candidati[0];
+                }
+            }
+            return candidati[0];
+        }
+
         // --- GESTIONE PROSSIMA PROVA ---
         function updateNextRehearsalUI(data) {
             document.getElementById('nextDateInput').value = data.date ? data.date.substring(0,10) : '';
@@ -348,7 +360,6 @@
 
             const viewMode = document.getElementById('nextViewMode');
             if (!data.date) {
-                // Scritta "in via di definizione" se vuoto (Punto 1)
                 viewMode.innerHTML = `
                     <div class="next-box"><div style="color:#8E8E93; font-style:italic; font-size:16px;">Prossima prova in via di definizione ⏳</div></div>
                     <button onclick="toggleNextEdit(true)" style="background-color:#E5E5EA;color:#000;">Imposta Data/Luogo</button>`;
@@ -360,11 +371,15 @@
                 const fromTime = data.from || ''; const toTime = data.to || '';
                 const timeHtml = (fromTime && toTime) ? `<div class="next-time">🕒 Dalle ${fromTime} alle ${toTime}</div>` : '';
 
+                const turno = calcolaTurno();
+                const turnoHtml = turno ? `<div class="next-turn-badge"><span class="next-turn-label">Tocca pagare a:</span><span class="next-turn-name" style="color:${turno.color};">${turno.name}</span></div>` : '';
+
                 viewMode.innerHTML = `
                     <div class="next-box">
                         <div class="next-title" style="color:var(--primary-blue);">${formatDataItaliana(data.date)}</div>
                         ${timeHtml}
                         <div style="display:flex; gap:8px; justify-content:center; align-items:flex-start;">${roomHtml}</div>
+                        ${turnoHtml}
                     </div>
                     <button onclick="toggleNextEdit(true)" style="background-color:#E5E5EA;color:#000;">Modifica Data/Luogo</button>`;
             }
@@ -384,20 +399,18 @@
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'next_rehearsal', next }) }).then(() => fetchData());
         }
 
-        // --- GESTIONE PAGAMENTI E CONDIVISIONE (Punto 1 e 2) ---
+        // --- GESTIONE PAGAMENTI E CONDIVISIONE ---
         function sendPayment() {
             const date = document.getElementById('dateInput').value; const payer = document.getElementById('payerInput').value;
             if (!date || !payer) { alert('Seleziona data e chi ha pagato.'); return; }
             
-            lastPayment = { date: date, payer: payer }; // Salva per i tasti social
+            lastPayment = { date: date, payer: payer }; 
             const btn = document.getElementById('saveBtn'); btn.disabled = true; btn.textContent = 'Salvataggio...';
             
-            // Auto-cancella la prova se il pagamento ha una data uguale o successiva alla prova in programma (Punto 1)
             let autoClearPromise = Promise.resolve();
             if (rawNextDate) {
                 const payDateObj = new Date(date);
                 const nextDateObj = new Date(rawNextDate);
-                // Azzera l'ora per confrontare solo i giorni
                 payDateObj.setHours(0,0,0,0); nextDateObj.setHours(0,0,0,0);
                 if (payDateObj >= nextDateObj) {
                     autoClearPromise = fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'clear_next_rehearsal' }) });
@@ -409,9 +422,17 @@
                 .then(() => { 
                     fetchData(); 
                     btn.disabled = false; btn.textContent = 'Aggiungi Pagamento'; 
-                    document.getElementById('shareBox').style.display = 'block'; // Mostra bottoni social
+                    document.getElementById('shareBox').style.display = 'block'; 
                 });
             });
+        }
+
+        // REINSERITO LA CANCELLAZIONE DELL'ULTIMO PAGAMENTO
+        function deleteLastPayment() {
+            if (!confirm('Sei sicuro di voler annullare l\'ultimo pagamento registrato? Questa azione non può essere annullata.')) return;
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'delete_last' }) })
+            .then(() => fetchData())
+            .catch(() => alert('Errore di rete.'));
         }
 
         function shareWhatsApp() {
@@ -426,7 +447,6 @@
         }
 
         // --- CONCERTI E STORICO ---
-        // (Il codice concerti e UI rimane lo stesso ma compresso per spazio)
         function updateConcertsUI() {
             const list = document.getElementById('concertsList'); list.innerHTML = '';
             concerts.sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -475,6 +495,9 @@
                 const member = members.find(m => m.name === p.payer); const color = member ? member.color : '#000';
                 list.innerHTML += `<li class="history-item"><span class="history-date" style="margin:0">${formatDataItaliana(p.date)}</span><span class="history-name" style="color:${color}">${p.payer}</span></li>`;
             });
+            
+            // MOSTRA IL PULSANTE CANCELLA SOLO SE CI SONO PAGAMENTI
+            document.getElementById('deleteLastBtn').style.display = payments.length > 0 ? 'block' : 'none';
         }
         function toggleHistory() {
             const c = document.getElementById('historyContent'), i = document.getElementById('historyToggleIcon');
