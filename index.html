@@ -488,7 +488,7 @@
         }
 
         function deleteLastPayment() {
-            if (!confirm('Sei sicuro di voler annullare l\\'ultimo pagamento registrato?')) return;
+            if (!confirm('Sei sicuro di voler annullare l\'ultimo pagamento registrato?')) return;
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'delete_last' }) }).then(() => fetchData()).catch(() => alert('Errore di rete.'));
         }
         function shareWhatsApp() {
