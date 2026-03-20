@@ -205,7 +205,7 @@
 
     <script>
         // ⚠️ INCOLLA QUI IL TUO LINK APP SCRIPT
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwq2JUb1xZR3jCYl-klO-AbuwAJHahNnlAstqLofxpbUefCbVzad3zVV2m8aTtCnr-y/exec";
+        const GOOGLE_SCRIPT_URL = "INCOLLA_IL_NUOVO_LINK_QUI";
         
         let members = [];
         let payments = []; let concerts = []; let customRooms = []; let settings = {};
@@ -424,47 +424,16 @@
             }
 
             const notesBox = document.getElementById('displayRehearsalNotes');
-       if (data.notes && data.notes.trim() !== "") { notesBox.innerHTML = data.notes.replace(/\n/g, '<br>'); notesBox.style.color = '#333'; notesBox.style.fontStyle = 'normal'; }
-       else { notesBox.innerHTML = 'Nessuna nota presente...'; notesBox.style.color = '#888'; notesBox.style.fontStyle = 'italic'; }
+            if (data.notes && data.notes.trim() !== "") { notesBox.innerHTML = data.notes.replace(/\n/g, '<br>'); notesBox.style.color = '#333'; notesBox.style.fontStyle = 'normal'; } 
+            else { notesBox.innerHTML = 'Nessuna nota presente...'; notesBox.style.color = '#888'; notesBox.style.fontStyle = 'italic'; }
         }
         function toggleNextEdit(show) { document.getElementById('nextEditMode').style.display = show?'block':'none'; document.getElementById('nextViewMode').style.display = show?'none':'block'; }
         function toggleNotesEdit(show) { document.getElementById('notesEditMode').style.display = show?'block':'none'; document.getElementById('notesViewMode').style.display = show?'none':'block'; }
         function saveNextRehearsal(source) {
-    const next = { 
-        date: document.getElementById('nextDateInput').value, 
-        from: document.getElementById('nextTimeFrom').value, 
-        to: document.getElementById('nextTimeTo').value, 
-        room: document.getElementById('nextRoomSelect').value, 
-        notes: document.getElementById('notesInputOnly').value 
-    };
-    
-    // Trova il pulsante corretto in base alla fonte della chiamata
-    const buttons = document.querySelectorAll('#nextEditMode button, #notesEditMode button');
-    const saveButton = Array.from(buttons).find(btn => btn.textContent.includes('Salva'));
-    if (saveButton) {
-        saveButton.disabled = true;
-        saveButton.textContent = 'Salvataggio...';
-    }
-    
-    fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'next_rehearsal', next }) })
-        .then(() => { 
-            fetchData(); 
-            // Chiudi il form dopo il salvataggio
-            if (source === 'notes') {
-                toggleNotesEdit(false);
-            } else {
-                toggleNextEdit(false);
-            }
-        })
-        .catch(error => {
-            alert('Errore durante il salvataggio. Riprova.');
-            console.error(error);
-            if (saveButton) {
-                saveButton.disabled = false;
-                saveButton.textContent = source === 'notes' ? 'Salva Note' : 'Salva Dati';
-            }
-        });
-}
+            const next = { date: document.getElementById('nextDateInput').value, from: document.getElementById('nextTimeFrom').value, to: document.getElementById('nextTimeTo').value, room: document.getElementById('nextRoomSelect').value, notes: document.getElementById('notesInputOnly').value };
+            document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn').textContent = 'Salvataggio...';
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'next_rehearsal', next }) }).then(() => fetchData());
+        }
 
         // --- PAGAMENTI E CONDIVISIONE ---
         function sendPayment() {
@@ -492,11 +461,11 @@
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'delete_last' }) }).then(() => fetchData()).catch(() => alert('Errore di rete.'));
         }
         function shareWhatsApp() {
-            if(!lastPayment) return; const text = `💰 Ho registrato il pagamento della sala prove!\\n📅 Data: ${formatDataItaliana(lastPayment.date)}\\n🎸 Ha pagato: ${lastPayment.payer}`;
+            if(!lastPayment) return; const text = `💰 Ho registrato il pagamento della sala prove!\n📅 Data: ${formatDataItaliana(lastPayment.date)}\n🎸 Ha pagato: ${lastPayment.payer}`;
             window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
         }
         function shareTelegram() {
-            if(!lastPayment) return; const text = `💰 Ho registrato il pagamento della sala prove!\\n📅 Data: ${formatDataItaliana(lastPayment.date)}\\n🎸 Ha pagato: ${lastPayment.payer}`;
+            if(!lastPayment) return; const text = `💰 Ho registrato il pagamento della sala prove!\n📅 Data: ${formatDataItaliana(lastPayment.date)}\n🎸 Ha pagato: ${lastPayment.payer}`;
             window.open(`https://t.me/share/url?url=${encodeURIComponent(text)}&text=`, '_blank');
         }
 
