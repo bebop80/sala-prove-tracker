@@ -166,34 +166,32 @@
             </div>
         </div>
         
-        <!-- CONCERTI -->
-        <div class="card">
-            <div class="history-header"><h2 class="history-title">Concerti 🎤</h2><select id="concertYearFilter" class="year-filter" onchange="updateConcertsUI()"><option value="all">Tutti</option></select></div>
-            <ul class="history-list" id="concertsList"></ul>
-            <button onclick="toggleConcertForm()" style="background-color:#E5E5EA; color:#000; margin-top:15px;">➕ Aggiungi Concerto</button>
-            <div id="addConcertForm" class="add-concert-form">
-                <div class="form-group"><label>Data</label><input type="date" id="concertDate"></div>
-                <div class="form-group"><label>Locale</label><input type="text" id="concertName"></div>
-                <div class="form-group"><label>Indirizzo</label><input type="text" id="concertAddress"></div>
-                <button onclick="saveConcert()">Salva</button>
-            </div>
-        </div>
-
-        <div class="card"><h2>Riepilogo Spese</h2><div id="chartContainer"></div></div>
-        
+                <!-- CONCERTI -->
         <div class="card">
             <div class="history-header">
-                <h2 class="history-title" onclick="toggleHistory()">Storico Pagamenti <span id="historyToggleIcon">▼</span></h2>
-                <select id="yearFilter" class="year-filter" onchange="updateHistoryUI()"><option value="all">Tutti</option></select>
+                <h2 class="history-title">Concerti 🎤</h2>
+                <select id="concertYearFilter" class="year-filter" onchange="updateConcertsUI()"><option value="all">Tutti</option></select>
             </div>
-            <div id="historyContent" class="history-content collapsed">
-                <ul class="history-list" id="historyList"></ul>
-                <button class="delete-last-btn" id="deleteLastBtn" onclick="deleteLastPayment()" style="display:none;">
-                    🗑️ Annulla ultimo pagamento inserito
-                </button>
+            
+            <ul class="history-list" id="concertsList"></ul>
+            
+            <!-- Link per aprire il form dei concerti -->
+            <div style="text-align: right; margin-top: 15px;">
+                <span class="action-link" style="font-size:14px;" onclick="toggleConcertForm()">➕ Aggiungi Concerto</span>
+            </div>
+            
+            <!-- Box Aggiunta Concerto (nascosto di default) -->
+            <div id="addConcertForm" class="manage-box" style="margin-top: 15px;">
+                <div class="form-group"><label>Data</label><input type="date" id="concertDate"></div>
+                <div class="form-group"><label>Locale / Evento</label><input type="text" id="concertName" placeholder="Es. Legend Club"></div>
+                <div class="form-group"><label>Indirizzo</label><input type="text" id="concertAddress" placeholder="Es. Viale Enrico Fermi, 98, Milano"></div>
+                
+                <div class="flex-row" style="margin-bottom:0;">
+                    <button onclick="saveConcert()">Salva</button>
+                    <button onclick="toggleConcertForm()" style="background-color:#FF3B30;">Annulla</button>
+                </div>
             </div>
         </div>
-    </div>
 
     <script>
         // ⚠️ INCOLLA QUI IL NUOVO LINK APP SCRIPT
