@@ -536,7 +536,7 @@
             c.classList.toggle('collapsed'); i.textContent = c.classList.contains('collapsed') ? '▼' : '▲';
         }
         function formatDataItaliana(dStr) {
-            if (!dStr) return ""; const [year, month, day] = dStr.split('-').map(Number); const d = new Date(year, month - 1, day);
+            const parts = dStr.split('-'); const year = parseInt(parts[0]); const month = parseInt(parts[1]); const day = parseInt(parts[2]); const d = new Date(year, month - 1, day);
             let f = d.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); return f.charAt(0).toUpperCase() + f.slice(1);
         }
 
@@ -550,12 +550,13 @@
                         if (!date) { alert('Nessuna prova impostata.'); return; }
                         let text = `🎸 Prossima prova:\n📅 ${formatDataItaliana(date)}`;
                         if (from && to) text += `\n🕒 Dalle ${from} alle ${to}`;
-                    const turno = calcolaTurno();
-                    if (turno) text += `\n💰 Tocca pagare a: ${turno.name}`;
 
                 if (sala) {
                                         text += `\n📍 ${sala.name}`;
                                         if (sala.address) text += `\n🗺️ https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sala.address)}`;
+                                        const turno = calcolaTurno();
+                    if (turno) text += `\n💰 Tocca pagare a: ${turno.name}`;
+
                                     }
                         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
                     }
@@ -569,15 +570,15 @@
                         if (!date) { alert('Nessuna prova impostata.'); return; }
                         let text = `🎸 Prossima prova:\n📅 ${formatDataItaliana(date)}`;
                         if (from && to) text += `\n🕒 Dalle ${from} alle ${to}`;
-                    const turno = calcolaTurno();
-                    if (turno) text += `\n💰 Tocca pagare a: ${turno.name}`;
-
+                    
                 if (sala) {
                                         text += `\n📍 ${sala.name}`;
                                         if (sala.address) text += `\n🗺️ https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sala.address)}`;
                                     }
-                        window.open(`https://t.me/share/url?url=&text=${encodeURIComponent(text)}`, '_blank');
-                    }
+                const turno = calcolaTurno();
+                    if (turno) text += `\n💰 Tocca pagare a: ${turno.name}`;
+
+            window.open(`tg://msg?text=${encodeURIComponent(text)}`, '_blank');                    }
     </script>
 </body>
 </html>
