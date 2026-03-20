@@ -52,6 +52,7 @@
         .new-room-box, .manage-box { background: #E5E5EA; padding: 15px; border-radius: 12px; margin-top: 10px; display: none; }
         .icon-btn { background:none; border:none; color:var(--primary-blue); font-size:20px; padding:0; width:auto; margin-left:10px; cursor:pointer;}
         .delete-last-btn { background: none; border: 1.5px solid #FF3B30; color: #FF3B30; border-radius: 12px; padding: 12px; font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 15px; }
+        .action-link { color:var(--primary-blue); font-size:12px; font-weight:600; cursor:pointer; }
     </style>
 </head>
 <body>
@@ -81,25 +82,39 @@
         <div class="card">
             <h2>Prossima Prova 🎸</h2>
             <div id="nextViewMode"></div>
+            
             <div id="nextEditMode" style="display:none;">
                 <div class="form-group"><label>Data</label><input type="date" id="nextDateInput"></div>
                 <div class="flex-row">
                     <div class="flex-col"><label>Dalle</label><input type="time" id="nextTimeFrom"></div>
                     <div class="flex-col"><label>Alle</label><input type="time" id="nextTimeTo"></div>
                 </div>
+                
                 <div class="form-group">
-                    <label>Sala Prove</label>
-                    <div class="flex-row" style="margin-bottom:0;">
-                        <select id="nextRoomSelect" onchange="handleRoomSelectChange()" style="flex:1;"></select>
-                        <button id="delRoomBtn" class="icon-btn" style="display:none; color:#FF3B30;" onclick="deleteSelectedRoom()">🗑️</button>
+                    <div class="flex-row" style="justify-content:space-between; margin-bottom:5px;">
+                        <label style="margin:0;">Sala Prove</label>
+                        <span class="action-link" onclick="toggleManageRoomsBox()">⚙️ Gestisci Sale</span>
                     </div>
+                    <select id="nextRoomSelect" onchange="handleRoomSelectChange()"></select>
                     
+                    <!-- Form aggiunta Nuova Sala -->
                     <div id="newRoomForm" class="new-room-box">
                         <label>Nome Nuova Sala</label><input type="text" id="newRoomName">
                         <label style="margin-top:10px;">Indirizzo (opzionale)</label><input type="text" id="newRoomAddress">
-                        <div class="flex-row" style="margin-top:10px;"><button onclick="saveNewRoom()">Salva Sala</button><button onclick="cancelNewRoom()" style="background:#FF3B30;">Annulla</button></div>
+                        <div class="flex-row" style="margin-top:10px;">
+                            <button onclick="saveNewRoom()">Salva Sala</button>
+                            <button onclick="cancelNewRoom()" style="background:#FF3B30;">Annulla</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Finestra Gestione ed Eliminazione Sale -->
+                    <div id="manageRoomsBox" class="manage-box">
+                        <label style="margin-bottom:10px;">Le tue sale personalizzate:</label>
+                        <ul id="roomsListManage" style="list-style:none; padding:0; margin:0;"></ul>
+                        <button onclick="toggleManageRoomsBox()" style="background:#E5E5EA; color:#000; margin-top:15px; font-size:14px;">Chiudi Gestione Sale</button>
                     </div>
                 </div>
+                
                 <div class="flex-row" id="mainEditButtons">
                     <button onclick="saveNextRehearsal('rehearsal')">Salva Dati</button>
                     <button onclick="toggleNextEdit(false)" style="background-color:#FF3B30;">Annulla</button>
@@ -124,7 +139,7 @@
             <div class="form-group">
                 <div class="flex-row" style="justify-content:space-between; margin-bottom:5px;">
                     <label style="margin:0;">Chi ha pagato?</label>
-                    <span style="color:var(--primary-blue); font-size:12px; font-weight:600; cursor:pointer;" onclick="toggleMembersBox()">⚙️ Gestisci Componenti</span>
+                    <span class="action-link" onclick="toggleMembersBox()">⚙️ Gestisci Componenti</span>
                 </div>
                 <select id="payerInput"><option value="" disabled selected>Seleziona componente</option></select>
             </div>
@@ -171,7 +186,6 @@
             </div>
             <div id="historyContent" class="history-content collapsed">
                 <ul class="history-list" id="historyList"></ul>
-                <!-- REINSERITO IL TASTO CANCELLA ULTIMO PAGAMENTO -->
                 <button class="delete-last-btn" id="deleteLastBtn" onclick="deleteLastPayment()" style="display:none;">
                     🗑️ Annulla ultimo pagamento inserito
                 </button>
@@ -285,36 +299,59 @@
             }
         }
 
-        // --- GESTIONE SALE PROVE ---
+        // --- GESTIONE SALE PROVE E CANCELLAZIONE ---
         function populateRoomsDropdown() {
             const select = document.getElementById('nextRoomSelect');
+            const list = document.getElementById('roomsListManage');
             const currentVal = select.value; 
+            
             select.innerHTML = `<option value="" selected>Seleziona la sala...</option>`;
+            list.innerHTML = '';
+            
             let allRooms = saleProveBase.concat(customRooms);
-            allRooms.forEach(sala => { select.innerHTML += `<option value="${sala.id}">${sala.name}</option>`; });
+            allRooms.forEach(sala => { 
+                select.innerHTML += `<option value="${sala.id}">${sala.name}</option>`; 
+            });
             select.innerHTML += `<option value="ADD_NEW" style="font-weight:bold; color:var(--primary-blue);">➕ Aggiungi nuova sala...</option>`;
             if(currentVal) select.value = currentVal;
+            
+            // Popola la lista delle sale da gestire (mostra solo quelle personalizzate per sicurezza)
+            if (customRooms.length === 0) {
+                list.innerHTML = '<li style="font-size:13px; color:#888;">Nessuna sala aggiunta.</li>';
+            } else {
+                customRooms.forEach(sala => {
+                    list.innerHTML += `<li style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px solid #D1D1D6; padding-bottom:5px;">
+                        <span style="font-weight:bold;">${sala.name}</span>
+                        <button class="icon-btn" style="color:#FF3B30;" onclick="deleteRoom('${sala.id}', '${sala.name}')">🗑️</button>
+                    </li>`;
+                });
+            }
+            
             handleRoomSelectChange();
         }
+        
+        function toggleManageRoomsBox() {
+            const box = document.getElementById('manageRoomsBox');
+            box.style.display = box.style.display === 'block' ? 'none' : 'block';
+        }
+
         function handleRoomSelectChange() {
             const select = document.getElementById('nextRoomSelect');
-            const delBtn = document.getElementById('delRoomBtn');
             if (select.value === 'ADD_NEW') {
                 document.getElementById('newRoomForm').style.display = 'block';
-                select.style.display = 'none'; document.getElementById('mainEditButtons').style.display = 'none'; delBtn.style.display = 'none';
-            } else {
-                // Mostra il cestino solo se la sala è stata aggiunta dall'utente (presente in customRooms)
-                const isCustom = customRooms.find(r => r.id === select.value);
-                delBtn.style.display = isCustom ? 'block' : 'none';
+                select.style.display = 'none'; 
+                document.getElementById('mainEditButtons').style.display = 'none';
+            } 
+        }
+
+        function deleteRoom(id, name) {
+            if(confirm("Vuoi eliminare definitivamente la sala '" + name + "'?")) {
+                document.getElementById('fullLoader').style.display = 'flex'; // mostra caricamento durante cancellazione
+                fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'delete_room', id: id }) })
+                .then(()=>fetchData());
             }
         }
-        function deleteSelectedRoom() {
-            const id = document.getElementById('nextRoomSelect').value;
-            if(!id) return;
-            if(confirm("Vuoi eliminare definitivamente questa sala prove?")) {
-                fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'delete_room', id: id }) }).then(()=>fetchData());
-            }
-        }
+
         function cancelNewRoom() {
             document.getElementById('newRoomForm').style.display = 'none';
             document.getElementById('nextRoomSelect').style.display = 'block';
@@ -322,6 +359,7 @@
             document.getElementById('nextRoomSelect').value = "";
             handleRoomSelectChange();
         }
+
         function saveNewRoom() {
             let name = document.getElementById('newRoomName').value.trim();
             if (!name) name = "Sala Personalizzata";
@@ -329,7 +367,7 @@
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'add_room', room: newRoomObj }) }).then(() => fetchData());
         }
 
-        // --- REINSERIMENTO CALCOLO A CHI TOCCA PAGARE ---
+        // --- CALCOLO A CHI TOCCA PAGARE ---
         function calcolaTurno() {
             if (payments.length === 0 || members.length === 0) return null;
             const totals = {};
@@ -427,7 +465,6 @@
             });
         }
 
-        // REINSERITO LA CANCELLAZIONE DELL'ULTIMO PAGAMENTO
         function deleteLastPayment() {
             if (!confirm('Sei sicuro di voler annullare l\'ultimo pagamento registrato? Questa azione non può essere annullata.')) return;
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'delete_last' }) })
@@ -496,7 +533,6 @@
                 list.innerHTML += `<li class="history-item"><span class="history-date" style="margin:0">${formatDataItaliana(p.date)}</span><span class="history-name" style="color:${color}">${p.payer}</span></li>`;
             });
             
-            // MOSTRA IL PULSANTE CANCELLA SOLO SE CI SONO PAGAMENTI
             document.getElementById('deleteLastBtn').style.display = payments.length > 0 ? 'block' : 'none';
         }
         function toggleHistory() {
