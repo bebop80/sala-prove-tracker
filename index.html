@@ -52,6 +52,7 @@
         .manage-box { background: #E5E5EA; padding: 15px; border-radius: 12px; margin-top: 10px; display: none; }
         .icon-btn { background:none; border:none; color:var(--primary-blue); font-size:20px; padding:0; width:auto; margin-left:10px; cursor:pointer;}
         .delete-last-btn { background: none; border: 1.5px solid #FF3B30; color: #FF3B30; border-radius: 12px; padding: 12px; font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 15px; }
+        .action-link { color:var(--primary-blue); font-size:14px; font-weight:600; cursor:pointer; }
     </style>
 </head>
 <body>
@@ -94,7 +95,6 @@
                     <label>Sala Prove</label>
                     <select id="nextRoomSelect" onchange="handleRoomSelectChange()"></select>
                     
-                    <!-- Form aggiunta Nuova Sala -->
                     <div id="newRoomForm" class="manage-box">
                         <label>Nome Nuova Sala</label><input type="text" id="newRoomName">
                         <label style="margin-top:10px;">Indirizzo (opzionale)</label><input type="text" id="newRoomAddress">
@@ -104,7 +104,6 @@
                         </div>
                     </div>
                     
-                    <!-- Finestra Gestione Sale -->
                     <div id="manageRoomsBox" class="manage-box">
                         <label style="margin-bottom:10px;">Gestisci Sale:</label>
                         <ul id="roomsListManage" style="list-style:none; padding:0; margin:0;"></ul>
@@ -136,11 +135,9 @@
             <div class="form-group"><label>Data prova pagata</label><input type="date" id="dateInput"></div>
             <div class="form-group">
                 <label>Chi ha pagato?</label>
-                <!-- Menu a tendina membri -->
                 <select id="payerInput" onchange="handleMemberSelectChange()"></select>
             </div>
             
-            <!-- Box Gestione Membri -->
             <div id="manageMembersBox" class="manage-box">
                 <label>Aggiungi Membro</label>
                 <div class="flex-row">
@@ -166,7 +163,7 @@
             </div>
         </div>
         
-                <!-- CONCERTI -->
+        <!-- CONCERTI -->
         <div class="card">
             <div class="history-header">
                 <h2 class="history-title">Concerti 🎤</h2>
@@ -175,17 +172,14 @@
             
             <ul class="history-list" id="concertsList"></ul>
             
-            <!-- Link per aprire il form dei concerti -->
             <div style="text-align: right; margin-top: 15px;">
-                <span class="action-link" style="font-size:14px;" onclick="toggleConcertForm()">➕ Aggiungi Concerto</span>
+                <span class="action-link" onclick="toggleConcertForm()">➕ Aggiungi Concerto</span>
             </div>
             
-            <!-- Box Aggiunta Concerto (nascosto di default) -->
-            <div id="addConcertForm" class="manage-box" style="margin-top: 15px;">
+            <div id="addConcertForm" class="manage-box">
                 <div class="form-group"><label>Data</label><input type="date" id="concertDate"></div>
                 <div class="form-group"><label>Locale / Evento</label><input type="text" id="concertName" placeholder="Es. Legend Club"></div>
-                <div class="form-group"><label>Indirizzo</label><input type="text" id="concertAddress" placeholder="Es. Viale Enrico Fermi, 98, Milano"></div>
-                
+                <div class="form-group"><label>Indirizzo</label><input type="text" id="concertAddress" placeholder="Es. Viale Enrico Fermi, Milano"></div>
                 <div class="flex-row" style="margin-bottom:0;">
                     <button onclick="saveConcert()">Salva</button>
                     <button onclick="toggleConcertForm()" style="background-color:#FF3B30;">Annulla</button>
@@ -193,8 +187,24 @@
             </div>
         </div>
 
+        <div class="card"><h2>Riepilogo Spese</h2><div id="chartContainer"></div></div>
+        
+        <div class="card">
+            <div class="history-header">
+                <h2 class="history-title" onclick="toggleHistory()">Storico Pagamenti <span id="historyToggleIcon">▼</span></h2>
+                <select id="yearFilter" class="year-filter" onchange="updateHistoryUI()"><option value="all">Tutti</option></select>
+            </div>
+            <div id="historyContent" class="history-content collapsed">
+                <ul class="history-list" id="historyList"></ul>
+                <button class="delete-last-btn" id="deleteLastBtn" onclick="deleteLastPayment()" style="display:none;">
+                    🗑️ Annulla ultimo pagamento inserito
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // ⚠️ INCOLLA QUI IL NUOVO LINK APP SCRIPT
+        // ⚠️ INCOLLA QUI IL TUO LINK APP SCRIPT
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwq2JUb1xZR3jCYl-klO-AbuwAJHahNnlAstqLofxpbUefCbVzad3zVV2m8aTtCnr-y/exec";
         
         let members = [];
@@ -210,7 +220,10 @@
             
             const noCacheUrl = GOOGLE_SCRIPT_URL + "?t=" + new Date().getTime();
             fetch(noCacheUrl)
-                .then(res => res.json())
+                .then(res => {
+                    if (!res.ok) throw new Error("Network response was not ok");
+                    return res.json();
+                })
                 .then(data => {
                     payments = data.payments || [];
                     concerts = data.concerts || [];
@@ -238,10 +251,13 @@
                     document.getElementById('fullLoader').style.display = 'none';
                     document.getElementById('appContent').style.display = 'block';
                 })
-                .catch(e => { alert('Errore connessione internet'); });
+                .catch(e => { 
+                    alert('Impossibile comunicare con il database. Controlla il link di Apps Script o ricarica la pagina.');
+                    console.error(e);
+                });
         }
 
-        // --- GESTIONE IMPOSTAZIONI BAND ---
+        // --- IMPOSTAZIONI BAND ---
         function applySettings() {
             const title = document.getElementById('bandNameDisplay');
             title.textContent = settings.NomeBand || "Sala Prove Tracker ☁️";
@@ -256,7 +272,7 @@
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'update_settings', settings: newSettings }) }).then(() => fetchData());
         }
 
-        // --- GESTIONE MEMBRI CON TENDINA ---
+        // --- GESTIONE MEMBRI ---
         function populateMembers() {
             const select = document.getElementById('payerInput');
             const list = document.getElementById('membersListManage');
@@ -272,7 +288,6 @@
                     <button class="icon-btn" style="color:#FF3B30;" onclick="deleteMember('${m.name}')">🗑️</button>
                 </li>`;
             });
-            // Aggiungo voce Gestione alla fine
             select.innerHTML += `<option value="MANAGE_MEMBERS" style="font-weight:bold; color:var(--primary-blue);">⚙️ Gestisci Componenti...</option>`;
             
             if(currentVal && currentVal !== 'MANAGE_MEMBERS') select.value = currentVal;
@@ -291,7 +306,7 @@
             document.getElementById('manageMembersBox').style.display = 'none';
             document.getElementById('payerInput').style.display = 'block';
             document.getElementById('mainPaymentButtons').style.display = 'block';
-            document.getElementById('payerInput').value = ""; // Resetta selezione
+            document.getElementById('payerInput').value = ""; 
         }
 
         function addMember() {
@@ -306,7 +321,7 @@
             }
         }
 
-        // --- GESTIONE SALE PROVE CON TENDINA ---
+        // --- GESTIONE SALE ---
         function populateRoomsDropdown() {
             const select = document.getElementById('nextRoomSelect');
             const list = document.getElementById('roomsListManage');
@@ -317,13 +332,12 @@
             
             customRooms.forEach(sala => { select.innerHTML += `<option value="${sala.id}">${sala.name}</option>`; });
             
-            // Aggiungo opzioni Aggiungi e Gestisci alla fine
             select.innerHTML += `<option value="ADD_NEW" style="font-weight:bold; color:var(--primary-blue);">➕ Aggiungi nuova sala...</option>`;
             select.innerHTML += `<option value="MANAGE_ROOMS" style="font-weight:bold; color:var(--primary-blue);">⚙️ Gestisci Sale...</option>`;
             
             if(currentVal && currentVal !== 'ADD_NEW' && currentVal !== 'MANAGE_ROOMS') select.value = currentVal;
             
-            if (customRooms.length === 0) { list.innerHTML = '<li style="font-size:13px; color:#888;">Nessuna sala.</li>'; } 
+            if (customRooms.length === 0) { list.innerHTML = '<li style="font-size:13px; color:#888;">Nessuna sala trovata nel database.</li>'; } 
             else {
                 customRooms.forEach(sala => {
                     list.innerHTML += `<li style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px solid #D1D1D6; padding-bottom:5px;">
@@ -373,7 +387,7 @@
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'add_room', room: newRoomObj }) }).then(() => fetchData());
         }
 
-        // --- CALCOLO A CHI TOCCA PAGARE ---
+        // --- CALCOLO TURNO E PROSSIMA PROVA ---
         function calcolaTurno() {
             if (payments.length === 0 || members.length === 0) return null;
             const totals = {}; members.forEach(m => totals[m.name] = 0);
@@ -390,7 +404,6 @@
             return candidati[0];
         }
 
-        // --- GESTIONE PROSSIMA PROVA ---
         function updateNextRehearsalUI(data) {
             document.getElementById('nextDateInput').value = data.date ? data.date.substring(0,10) : '';
             document.getElementById('nextTimeFrom').value = data.from || ''; document.getElementById('nextTimeTo').value = data.to || '';
@@ -422,7 +435,7 @@
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'next_rehearsal', next }) }).then(() => fetchData());
         }
 
-        // --- GESTIONE PAGAMENTI E CONDIVISIONE ---
+        // --- PAGAMENTI E CONDIVISIONE ---
         function sendPayment() {
             const date = document.getElementById('dateInput').value; const payer = document.getElementById('payerInput').value;
             if (!date || !payer || payer === 'MANAGE_MEMBERS') { alert('Seleziona data e chi ha pagato.'); return; }
@@ -456,7 +469,7 @@
             window.open(`https://t.me/share/url?url=${encodeURIComponent(text)}&text=`, '_blank');
         }
 
-        // --- CONCERTI E STORICO ---
+        // --- CONCERTI, RIEPILOGO E STORICO ---
         function updateConcertsUI() {
             const list = document.getElementById('concertsList'); list.innerHTML = '';
             concerts.sort((a, b) => new Date(a.date) - new Date(b.date));
