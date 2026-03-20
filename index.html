@@ -424,8 +424,8 @@
             }
 
             const notesBox = document.getElementById('displayRehearsalNotes');
-            if (data.notes && data.notes.trim() !== "") { notesBox.innerHTML = data.notes.replace(/\\n/g, '<br>'); notesBox.style.color = '#333'; notesBox.style.fontStyle = 'normal'; } 
-            else { notesBox.innerHTML = 'Nessuna nota presente...'; notesBox.style.color = '#888'; notesBox.style.fontStyle = 'italic'; }
+       if (data.notes && data.notes.trim() !== "") { notesBox.innerHTML = data.notes.replace(/\n/g, '<br>'); notesBox.style.color = '#333'; notesBox.style.fontStyle = 'normal'; }
+       else { notesBox.innerHTML = 'Nessuna nota presente...'; notesBox.style.color = '#888'; notesBox.style.fontStyle = 'italic'; }
         }
         function toggleNextEdit(show) { document.getElementById('nextEditMode').style.display = show?'block':'none'; document.getElementById('nextViewMode').style.display = show?'none':'block'; }
         function toggleNotesEdit(show) { document.getElementById('notesEditMode').style.display = show?'block':'none'; document.getElementById('notesViewMode').style.display = show?'none':'block'; }
