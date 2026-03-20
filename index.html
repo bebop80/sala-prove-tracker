@@ -112,7 +112,7 @@
                 </div>
                 
                 <div class="flex-row" id="mainEditButtons">
-                    <button id="saveRehearsalBtn" onclick="saveNextRehearsal('rehearsal')">Salva Dati</button>
+                    <button onclick="saveNextRehearsal('rehearsal')">Salva Dati</button>
                     <button onclick="toggleNextEdit(false)" style="background-color:#FF3B30;">Annulla</button>
                 </div>
             </div>
@@ -125,7 +125,7 @@
             </div>
             <div id="notesEditMode" style="display:none;">
                 <textarea id="notesInputOnly" placeholder="Scrivi note per la band..."></textarea>
-                <div class="flex-row" style="margin-top:10px;"><button id="saveNotesBtn" onclick="saveNextRehearsal('notes')" style="background-color:#FF9500;">Salva Note</button></div>
+                <div class="flex-row" style="margin-top:10px;"><button onclick="saveNextRehearsal('notes')" style="background-color:#FF9500;">Salva Note</button><button onclick="toggleNotesEdit(false)" style="background-color:#FF3B30;">Annulla</button></div>
             </div>
         </div>
         
@@ -201,13 +201,6 @@
                 </button>
             </div>
         </div>
-        <!-- COPYRIGHT FOOTER -->
-        <div style="text-align: center; margin-top: 30px; margin-bottom: 20px; font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
-            &copy; 2026 Sala Prove Tracker. Tutti i diritti riservati.<br>
-            È vietata la riproduzione del codice e della grafica.<br>
-            <span style="font-style: italic; display: inline-block; margin-top: 8px;">Fatto con 🤘🏼 da Alessandro Cortinovis per i veri musicisti.</span>
-        </div>
-
     </div>
 
     <script>
@@ -276,7 +269,7 @@
         function saveBandSettings() {
             const newSettings = { NomeBand: document.getElementById('bandNameInput').value || "Sala Prove Tracker", ColoreBand: document.getElementById('bandColorInput').value || "#000000" };
             document.getElementById('bandNameDisplay').textContent = "Salvataggio...";
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'update_settings', settings: newSettings }) }).then(() => { fetchData(); const btn = document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn'); btn.textContent = source==='notes'?'Salva Note':'Salva Dati'; }).catch(e => { alert('Errore di rete. Riprova.'); const btn = document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn'); btn.textContent = source==='notes'?'Salva Note':'Salva Dati'; });
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'update_settings', settings: newSettings }) }).then(() => fetchData());
         }
 
         // --- GESTIONE MEMBRI ---
@@ -391,7 +384,7 @@
             let name = document.getElementById('newRoomName').value.trim();
             if (!name) name = "Sala Personalizzata";
             const newRoomObj = { id: 'room_' + Date.now(), name: name, address: document.getElementById('newRoomAddress').value.trim() };
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'add_room', room: newRoomObj }) }).then(() => { fetchData(); const btn = document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn'); btn.textContent = source==='notes'?'Salva Note':'Salva Dati'; }).catch(e => { alert('Errore di rete. Riprova.'); const btn = document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn'); btn.textContent = source==='notes'?'Salva Note':'Salva Dati'; });
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'add_room', room: newRoomObj }) }).then(() => fetchData());
         }
 
         // --- CALCOLO TURNO E PROSSIMA PROVA ---
@@ -439,7 +432,7 @@
         function saveNextRehearsal(source) {
             const next = { date: document.getElementById('nextDateInput').value, from: document.getElementById('nextTimeFrom').value, to: document.getElementById('nextTimeTo').value, room: document.getElementById('nextRoomSelect').value, notes: document.getElementById('notesInputOnly').value };
             document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn').textContent = 'Salvataggio...';
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'next_rehearsal', next }) }).then(() => { fetchData(); const btn = document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn'); btn.textContent = source==='notes'?'Salva Note':'Salva Dati'; }).catch(e => { alert('Errore di rete. Riprova.'); const btn = document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn'); btn.textContent = source==='notes'?'Salva Note':'Salva Dati'; });
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'next_rehearsal', next }) }).then(() => fetchData());
         }
 
         // --- PAGAMENTI E CONDIVISIONE ---
@@ -499,7 +492,7 @@
             const date = document.getElementById('concertDate').value, name = document.getElementById('concertName').value, address = document.getElementById('concertAddress').value;
             if(!date || !name) return; fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'add_concert', concert: { id: 'conc_'+Date.now(), date, name, address } }) }).then(() => { toggleConcertForm(); fetchData(); });
         }
-        function deleteConcert(id) { if(confirm("Vuoi eliminare questo concerto?")) fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'delete_concert', id: id }) }).then(() => { fetchData(); const btn = document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn'); btn.textContent = source==='notes'?'Salva Note':'Salva Dati'; }).catch(e => { alert('Errore di rete. Riprova.'); const btn = document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn'); btn.textContent = source==='notes'?'Salva Note':'Salva Dati'; }); }
+        function deleteConcert(id) { if(confirm("Vuoi eliminare questo concerto?")) fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'delete_concert', id: id }) }).then(() => fetchData()); }
 
         function updateUI() {
             const chart = document.getElementById('chartContainer'); chart.innerHTML = '';
