@@ -441,8 +441,7 @@
         function saveNextRehearsal(source) {
             const next = { date: document.getElementById('nextDateInput').value, from: document.getElementById('nextTimeFrom').value, to: document.getElementById('nextTimeTo').value, room: document.getElementById('nextRoomSelect').value, notes: document.getElementById('notesInputOnly').value };
             document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn').textContent = 'Salvataggio...';
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'next_rehearsal', next }) }).then(() => { fetchData(); const btn = document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn'); btn.textContent = source==='notes'?'Salva Note':'Salva Dati'; }).catch(e => { alert('Errore di rete. Riprova.'); const btn = document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn'); btn.textContent = source==='notes'?'Salva Note':'Salva Dati'; });
-        }
+        fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'next_rehearsal', next }) }).then(() => { fetchData(); toggleNextEdit(false); }).catch(() => { const btn = document.getElementById('saveRehearsalBtn'); if(btn) { btn.disabled=false; btn.textContent='Salva Dati'; } });        }
 
         // --- PAGAMENTI E CONDIVISIONE ---
         function sendPayment() {
