@@ -430,15 +430,24 @@
         }
         function toggleNextEdit(show) { document.getElementById('nextEditMode').style.display = show?'block':'none'; document.getElementById('nextViewMode').style.display = show?'none':'block'; }
         function toggleNotesEdit(show) { document.getElementById('notesEditMode').style.display = show?'block':'none'; document.getElementById('notesViewMode').style.display = show?'none':'block'; }
-        function saveNextRehearsal(source) {
-    const next = { date: document.getElementById('nextDateInput').value, from: document.getElementById('nextTimeFrom').value, to: document.getElementById('nextTimeTo').value, room: document.getElementById('nextRoomSelect').value, notes: document.getElementById('notesInputOnly').value };
-    document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn').textContent = 'Salvataggio...';
+       function saveNextRehearsal(source) {
+    const next = { 
+        date: document.getElementById('nextDateInput').value, 
+        from: document.getElementById('nextTimeFrom').value, 
+        to: document.getElementById('nextTimeTo').value, 
+        room: document.getElementById('nextRoomSelect').value, 
+        notes: document.getElementById('notesInputOnly').value 
+    };
+    
+    const btn = document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn');
+    btn.textContent = 'Salvataggio...';
+    btn.disabled = true;
+    
     fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'next_rehearsal', next }) })
         .then(() => { 
-            fetchData(); 
-            const btn = document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn'); 
+            fetchData();
             btn.textContent = source==='notes'?'Salva Note':'Salva Dati';
-            // Chiudi il form dopo il salvataggio
+            btn.disabled = false;
             if (source === 'notes') {
                 toggleNotesEdit(false);
             } else {
@@ -446,9 +455,9 @@
             }
         })
         .catch(e => { 
-            alert('Errore di rete. Riprova.'); 
-            const btn = document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn'); 
-            btn.textContent = source==='notes'?'Salva Note':'Salva Dati'; 
+            alert('Errore di rete. Riprova.');
+            btn.textContent = source==='notes'?'Salva Note':'Salva Dati';
+            btn.disabled = false;
         });
 }
 
