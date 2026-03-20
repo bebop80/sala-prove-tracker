@@ -554,6 +554,8 @@
                                         text += `\n📍 ${sala.name}`;
                                         if (sala.address) text += `\n🗺️ https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sala.address)}`;
                                     }
+                    const turno = calcolaTurno();
+                    if (turno) text += `\n💰 Tocca pagare a: ${turno.name}`;
                         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
                     }
 
@@ -570,6 +572,8 @@
                                         text += `\n📍 ${sala.name}`;
                                         if (sala.address) text += `\n🗺️ https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sala.address)}`;
                                     }
+                    const turno = calcolaTurno();
+                    if (turno) text += `\n💰 Tocca pagare a: ${turno.name}`;
                         window.open(`https://t.me/share/url?url=&text=${encodeURIComponent(text)}`, '_blank');
                     }
     </script>
