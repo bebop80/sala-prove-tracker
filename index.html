@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+rawNextDate
 <html lang="it">
 <head>
     <meta charset="UTF-8">
@@ -245,7 +245,8 @@
                     
                     rawNextDate = (data.next && data.next.date) ? data.next.date : null;
                     if (rawNextDate) {
-                        const nextD = new Date(rawNextDate);
+                                        248
+                                            = rawNextDate.split('-'); const nextD = new Date(y, m - 1, d);
                         const today = new Date(); today.setHours(0,0,0,0);
                         if (nextD < today) {
                             data.next = {}; rawNextDate = null;
@@ -276,7 +277,8 @@
         function saveBandSettings() {
             const newSettings = { NomeBand: document.getElementById('bandNameInput').value || "Sala Prove Tracker", ColoreBand: document.getElementById('bandColorInput').value || "#000000" };
             document.getElementById('bandNameDisplay').textContent = "Salvataggio...";
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'update_settings', settings: newSettings }) }).then(() => { fetchData(); const btn = document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn'); btn.textContent = source==='notes'?'Salva Note':'Salva Dati'; }).catch(e => { alert('Errore di rete. Riprova.'); const btn = document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn'); btn.textContent = source==='notes'?'Salva Note':'Salva Dati'; });
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'update_settings', settings: newSettings }) })444
+                = document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn'); btn.textContent = source==='notes'?'Salva Note':'Salva Dati'; }).catch(e => { alert('Errore di rete. Riprova.'); const btn = document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn'); btn.textContent = source==='notes'?'Salva Note':'Salva Dati'; });
         }
 
         // --- GESTIONE MEMBRI ---
@@ -391,7 +393,8 @@
             let name = document.getElementById('newRoomName').value.trim();
             if (!name) name = "Sala Personalizzata";
             const newRoomObj = { id: 'room_' + Date.now(), name: name, address: document.getElementById('newRoomAddress').value.trim() };
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'add_room', room: newRoomObj }) }).then(() => { fetchData(); const btn = document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn'); btn.textContent = source==='notes'?'Salva Note':'Salva Dati'; }).catch(e => { alert('Errore di rete. Riprova.'); const btn = document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn'); btn.textContent = source==='notes'?'Salva Note':'Salva Dati'; });
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'add_room', room: newRoomObj }) 442
+                (); const btn = document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn'); btn.textContent = source==='notes'?'Salva Note':'Salva Dati'; }).catch(e => { alert('Errore di rete. Riprova.'); const btn = document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn'); btn.textContent = source==='notes'?'Salva Note':'Salva Dati'; });
         }
 
         // --- CALCOLO TURNO E PROSSIMA PROVA ---
@@ -443,7 +446,7 @@
         }
 
         // --- PAGAMENTI E CONDIVISIONE ---
-        function sendPayment() {
+        function sendPayment() { toggleNextEdit(false); toggleNextEdit(false);
             const date = document.getElementById('dateInput').value; const payer = document.getElementById('payerInput').value;
             if (!date || !payer || payer === 'MANAGE_MEMBERS') { alert('Seleziona data e chi ha pagato.'); return; }
             
@@ -499,7 +502,8 @@
             const date = document.getElementById('concertDate').value, name = document.getElementById('concertName').value, address = document.getElementById('concertAddress').value;
             if(!date || !name) return; fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'add_concert', concert: { id: 'conc_'+Date.now(), date, name, address } }) }).then(() => { toggleConcertForm(); fetchData(); });
         }
-        function deleteConcert(id) { if(confirm("Vuoi eliminare questo concerto?")) fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'delete_concert', id: id }) }).then(() => { fetchData(); const btn = document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn'); btn.textContent = source==='notes'?'Salva Note':'Salva Dati'; }).catch(e => { alert('Errore di rete. Riprova.'); const btn = document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn'); btn.textContent = source==='notes'?'Salva Note':'Salva Dati'; }); }
+        function deleteConcert(id) { if(confirm("Vuoi eliminare questo concerto?")) fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'delete_concert', id: id }) }).then(() => { fetchData()443
+            document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn'); btn.textContent = source==='notes'?'Salva Note':'Salva Dati'; }).catch(e => { alert('Errore di rete. Riprova.'); const btn = document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn'); btn.textContent = source==='notes'?'Salva Note':'Salva Dati'; }); }
 
         function updateUI() {
             const chart = document.getElementById('chartContainer'); chart.innerHTML = '';
