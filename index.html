@@ -43,11 +43,6 @@
         .next-turn-badge { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; padding: 9px 16px; border-radius: 20px; background-color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.10); justify-content:center;}
         .next-turn-label { color: var(--text-secondary); font-weight: 400; font-size: 13px; }
         .next-turn-name { font-size: 15px; font-weight: 700; }
-                .share-buttons { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
-                .share-btn { flex: 1; padding: 10px 15px; border-radius: 10px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: opacity 0.2s; }
-                .share-btn:active { opacity: 0.7; }
-                .whatsapp-btn { background-color: #25D366; color: white; }
-                .telegram-btn { background-color: #0088cc; color: white; }
         .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .history-title { font-size: 18px; margin: 0; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
         .year-filter { padding: 6px 12px; border-radius: 8px; border: 1px solid #D1D1D6; font-size: 14px; background: white; font-weight: 600; width: auto; }
@@ -91,7 +86,9 @@
             
             <div id="nextEditMode" style="display:none;">
                 <div class="form-group"><label>Data</label><input type="date" id="nextDateInput"></div>
-                <div class="flex-col"><label>Dalle</label><input type="time" id="nextTimeFrom"></div>                    <div class="flex-col"><label>Alle</label><input type="time" id="nextTimeTo"></div>
+                <div class="flex-row">
+                    <div class="flex-col"><label>Dalle</label><input type="time" id="nextTimeFrom"></div>
+                    <div class="flex-col"><label>Alle</label><input type="time" id="nextTimeTo"></div>
                 </div>
                 
                 <div class="form-group">
@@ -415,7 +412,8 @@
         }
 
         function updateNextRehearsalUI(data) {
-        let dateValue = ''; if (data.date) { if (data.date.includes('/')) { const parts = data.date.split('/'); if (parts.length === 3) { dateValue = parts[2] + '-' + parts[1].padStart(2,'0') + '-' + parts[0].padStart(2,'0'); } } else { dateValue = data.date.substring(0,10); } } document.getElementById('nextDateInput').value = dateValue;            document.getElementById('nextTimeFrom').value = data.from || ''; document.getElementById('nextTimeTo').value = data.to || '';
+            document.getElementById('nextDateInput').value = data.date ? data.date.substring(0,10) : '';
+            document.getElementById('nextTimeFrom').value = data.from || ''; document.getElementById('nextTimeTo').value = data.to || '';
             document.getElementById('nextRoomSelect').value = data.room || ''; document.getElementById('notesInputOnly').value = data.notes || '';
 
             const viewMode = document.getElementById('nextViewMode');
@@ -429,7 +427,7 @@
                 const turno = calcolaTurno();
                 const turnoHtml = turno ? `<div class="next-turn-badge"><span class="next-turn-label">Tocca pagare a:</span><span class="next-turn-name" style="color:${turno.color};">${turno.name}</span></div>` : '';
 
-                viewMode.innerHTML = `<div class="next-box"><div class="next-title" style="color:var(--primary-blue);">${formatDataItaliana(data.date)}</div>${timeHtml}<div style="display:flex; gap:8px; justify-content:center; align-items:flex-start;">${roomHtml}</div>${turnoHtml}<div class="share-buttons"><button class="share-btn whatsapp-btn" onclick="shareNextRehearsalWhatsApp()">💬 WhatsApp</button><button class="share-btn telegram-btn" onclick="shareNextRehearsalTelegram()">✈️ Telegram</button></div></div><button onclick="toggleNextEdit(true)" style="background-color:#E5E5EA;color:#000;">Modifica Data/Luogo</button>`;
+                viewMode.innerHTML = `<div class="next-box"><div class="next-title" style="color:var(--primary-blue);">${formatDataItaliana(data.date)}</div>${timeHtml}<div style="display:flex; gap:8px; justify-content:center; align-items:flex-start;">${roomHtml}</div>${turnoHtml}</div><button onclick="toggleNextEdit(true)" style="background-color:#E5E5EA;color:#000;">Modifica Data/Luogo</button>`;
             }
 
             const notesBox = document.getElementById('displayRehearsalNotes');
@@ -441,7 +439,8 @@
         function saveNextRehearsal(source) {
             const next = { date: document.getElementById('nextDateInput').value, from: document.getElementById('nextTimeFrom').value, to: document.getElementById('nextTimeTo').value, room: document.getElementById('nextRoomSelect').value, notes: document.getElementById('notesInputOnly').value };
             document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn').textContent = 'Salvataggio...';
-        fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'next_rehearsal', next }) }).then(() => { fetchData(); toggleNextEdit(false); }).catch(() => { const btn = document.getElementById('saveRehearsalBtn'); if(btn) { btn.disabled=false; btn.textContent='Salva Dati'; } });        }
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'next_rehearsal', next }) }).then(() => { fetchData(); const btn = document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn'); btn.textContent = source==='notes'?'Salva Note':'Salva Dati'; }).catch(e => { alert('Errore di rete. Riprova.'); const btn = document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn'); btn.textContent = source==='notes'?'Salva Note':'Salva Dati'; });
+        }
 
         // --- PAGAMENTI E CONDIVISIONE ---
         function sendPayment() {
@@ -532,49 +531,9 @@
             c.classList.toggle('collapsed'); i.textContent = c.classList.contains('collapsed') ? '▼' : '▲';
         }
         function formatDataItaliana(dStr) {
-            const parts = dStr.split('-'); const year = parseInt(parts[0]); const month = parseInt(parts[1]); const day = parseInt(parts[2]); const d = new Date(year, month - 1, day);
+            if (!dStr) return ""; const d = new Date(dStr);
             let f = d.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); return f.charAt(0).toUpperCase() + f.slice(1);
         }
-
-            // --- CONDIVISIONE PROSSIMA PROVA ---
-            function shareNextRehearsalWhatsApp() {
-                        const date = document.getElementById('nextDateInput').value;
-                        const from = document.getElementById('nextTimeFrom').value;
-                        const to = document.getElementById('nextTimeTo').value;
-                        const roomId = document.getElementById('nextRoomSelect').value;
-                        const sala = customRooms.find(s => s.id === roomId);
-                        if (!date) { alert('Nessuna prova impostata.'); return; }
-                        let text = `🎸 Prossima prova:\n📅 ${formatDataItaliana(date)}`;
-                        if (from && to) text += `\n🕒 Dalle ${from} alle ${to}`;
-
-                if (sala) {
-                                        text += `\n📍 ${sala.name}`;
-                                        if (sala.address) text += `\n🗺️ https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sala.address)}`;
-                                        const turno = calcolaTurno();
-                    if (turno) text += `\n💰 Tocca pagare a: ${turno.name}`;
-
-                                    }
-                        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-                    }
-
-            function shareNextRehearsalTelegram() {
-                        const date = document.getElementById('nextDateInput').value;
-                        const from = document.getElementById('nextTimeFrom').value;
-                        const to = document.getElementById('nextTimeTo').value;
-                        const roomId = document.getElementById('nextRoomSelect').value;
-                        const sala = customRooms.find(s => s.id === roomId);
-                        if (!date) { alert('Nessuna prova impostata.'); return; }
-                        let text = `🎸 Prossima prova:\n📅 ${formatDataItaliana(date)}`;
-                        if (from && to) text += `\n🕒 Dalle ${from} alle ${to}`;
-                    
-                if (sala) {
-                                        text += `\n📍 ${sala.name}`;
-                                        if (sala.address) text += `\n🗺️ https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sala.address)}`;
-                                    }
-                const turno = calcolaTurno();
-                    if (turno) text += `\n💰 Tocca pagare a: ${turno.name}`;
-
-            window.open(`tg://msg?text=${encodeURIComponent(text)}`, '_blank');                    }
     </script>
 </body>
 </html>
