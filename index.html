@@ -495,26 +495,9 @@ viewMode.innerHTML = `<div class="next-box"><div class="next-title" style="color
             if (!confirm('Sei sicuro di voler annullare l\'ultimo pagamento registrato?')) return;
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'delete_last' }) }).then(() => fetchData()).catch(() => alert('Errore di rete.'));
         }
-        function shareRehearsalWhatsApp() {
-    const dateInput = document.getElementById('nextDateInput').value;
-    const timeFrom = document.getElementById('nextTimeFrom').value;
-    const timeTo = document.getElementById('nextTimeTo').value;
-    const roomId = document.getElementById('nextRoomSelect').value;
-    const notes = document.getElementById('notesInputOnly').value;
-    
-    if (!dateInput) {
-        alert('Nessuna prova programmata da condividere');
-        return;
-    }
-    
-    const sala = customRooms.find(s => s.id === roomId);
-    const roomName = sala ? sala.name : 'Da definire';
-    const roomAddress = sala && sala.address ? sala.address : '';
-    const turno = calcolaTurno();
-    const turnoText = turno ? turno.name : 'Da definire';
-    
+        function shareRehearsalWhatsApp(dateStr, timeFrom, timeTo, roomName, roomAddress, turnoText, notes) {
     let message = `🎸 *PROSSIMA PROVA*\n\n`;
-    message += `📅 *Data:* ${formatDataItaliana(dateInput)}\n`;
+    message += `📅 *Data:* ${formatDataItaliana(dateStr)}\n`;
     if (timeFrom && timeTo) {
         message += `🕒 *Orario:* Dalle ${timeFrom} alle ${timeTo}\n`;
     }
