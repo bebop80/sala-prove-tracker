@@ -420,8 +420,7 @@
                 const turno = calcolaTurno();
                 const turnoHtml = turno ? `<div class="next-turn-badge"><span class="next-turn-label">Tocca pagare a:</span><span class="next-turn-name" style="color:${turno.color};">${turno.name}</span></div>` : '';
 
-                viewMode.innerHTML = `<div class="next-box"><div class="next-title" style="color:var(--primary-blue);">${formatDataItaliana(data.date)}</div>${timeHtml}<div style="display:flex; gap:8px; justify-content:center; align-items:flex-start;">${roomHtml}</div>${turnoHtml}</div><button onclick="toggleNextEdit(true)" style="background-color:#E5E5EA;color:#000;">Modifica Data/Luogo</button>`;
-            }
+            viewMode.innerHTML = `<div class="next-box"><div class="next-title" style="color:var(--primary-blue);">${formatDataItaliana(data.date)}</div>${timeHtml}<div style="display:flex; gap:8px; justify-content:center; align-items:flex-start;">${roomHtml}</div>${turnoHtml}</div><div class="flex-row" style="margin-bottom:0;"><button onclick="shareRehearsalWhatsApp()" style="background-color:#25D366; flex:1;">📱 Condividi su WhatsApp</button><button onclick="toggleNextEdit(true)" style="background-color:#E5E5EA;color:#000; flex:1;">Modifica Data/Luogo</button></div>`;
 
             const notesBox = document.getElementById('displayRehearsalNotes');
             if (data.notes && data.notes.trim() !== "") { notesBox.innerHTML = data.notes.replace(/\n/g, '<br>'); notesBox.style.color = '#333'; notesBox.style.fontStyle = 'normal'; } 
@@ -490,9 +489,41 @@
             if (!confirm('Sei sicuro di voler annullare l\'ultimo pagamento registrato?')) return;
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'delete_last' }) }).then(() => fetchData()).catch(() => alert('Errore di rete.'));
         }
-        function shareWhatsApp() {
-            if(!lastPayment) return; const text = `💰 Ho registrato il pagamento della sala prove!\n📅 Data: ${formatDataItaliana(lastPayment.date)}\n🎸 Ha pagato: ${lastPayment.payer}`;
-            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        function shareRehearsalWhatsApp() {
+    const dateInput = document.getElementById('nextDateInput').value;
+    const timeFrom = document.getElementById('nextTimeFrom').value;
+    const timeTo = document.getElementById('nextTimeTo').value;
+    const roomId = document.getElementById('nextRoomSelect').value;
+    const notes = document.getElementById('notesInputOnly').value;
+    
+    if (!dateInput) {
+        alert('Nessuna prova programmata da condividere');
+        return;
+    }
+    
+    const sala = customRooms.find(s => s.id === roomId);
+    const roomName = sala ? sala.name : 'Da definire';
+    const roomAddress = sala && sala.address ? sala.address : '';
+    const turno = calcolaTurno();
+    const turnoText = turno ? turno.name : 'Da definire';
+    
+    let message = `🎸 *PROSSIMA PROVA*\n\n`;
+    message += `📅 *Data:* ${formatDataItaliana(dateInput)}\n`;
+    if (timeFrom && timeTo) {
+        message += `🕒 *Orario:* Dalle ${timeFrom} alle ${timeTo}\n`;
+    }
+    message += `📍 *Luogo:* ${roomName}\n`;
+    if (roomAddress) {
+        message += `   ${roomAddress}\n`;
+    }
+    message += `💰 *Tocca pagare a:* ${turnoText}\n`;
+    if (notes && notes.trim() !== '') {
+        message += `\n📝 *Note:*\n${notes}`;
+    }
+    
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+}
+
         }
         function shareTelegram() {
             if(!lastPayment) return; const text = `💰 Ho registrato il pagamento della sala prove!\n📅 Data: ${formatDataItaliana(lastPayment.date)}\n🎸 Ha pagato: ${lastPayment.payer}`;
