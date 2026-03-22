@@ -562,13 +562,33 @@
             c.classList.toggle('collapsed'); i.textContent = c.classList.contains('collapsed') ? '▼' : '▲';
         }
 
-        function formatDataItaliana(dStr) {
-            if (!dStr) return "";
-            const [year, month, day] = dStr.split('-').map(Number);
-            const d = new Date(year, month - 1, day);
-            let f = d.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-            return f.charAt(0).toUpperCase() + f.slice(1);
+        function formatDataItaliana(d) {
+    if (!d) return "";
+
+    let dateObj;
+    if (d instanceof Date) {
+        dateObj = d;                    // caso più comune dal tuo foglio Google
+    } else if (typeof d === "string") {
+        if (d.includes("-")) {
+            const [year, month, day] = d.split("-").map(Number);
+            dateObj = new Date(year, month - 1, day);
+        } else {
+            dateObj = new Date(d);
         }
+    } else {
+        dateObj = new Date(d);
+    }
+
+    if (isNaN(dateObj.getTime())) return "Data non valida";
+
+    let f = dateObj.toLocaleDateString("it-IT", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+    });
+    return f.charAt(0).toUpperCase() + f.slice(1);
+}
     </script>
 </body>
 </html>
