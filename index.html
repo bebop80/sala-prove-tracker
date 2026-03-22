@@ -562,11 +562,8 @@
             c.classList.toggle('collapsed'); i.textContent = c.classList.contains('collapsed') ? '▼' : '▲';
         }
 
-        function formatDataItaliana(d) {
+       function formatDataItaliana(d) {
     if (!d) return "";
-
-    // === DEBUG (temporaneo - puoi toglierlo dopo) ===
-    console.log("🔍 Raw date received:", d, "tipo:", typeof d);
 
     let dateObj;
 
@@ -574,22 +571,25 @@
         dateObj = d;
     } 
     else if (typeof d === "string") {
-        // Formato YYYY-MM-DD (dal tuo codice precedente)
-        if (/^\d{4}-\d{2}-\d{2}/.test(d)) {
-            const [year, month, day] = d.split('-').map(Number);
+        // Rimuove la parte oraria (T22:00:00.000Z) se presente
+        let cleanDate = d.split('T')[0];
+
+        // Formato YYYY-MM-DD (il più comune ora)
+        if (/^\d{4}-\d{2}-\d{2}/.test(cleanDate)) {
+            const [year, month, day] = cleanDate.split('-').map(Number);
             dateObj = new Date(year, month - 1, day);
         } 
-        // Formato italiano DD/MM/YYYY (molto comune nei fogli Google)
-        else if (/^\d{1,2}\/\d{1,2}\/\d{4}/.test(d)) {
-            const [day, month, year] = d.split('/').map(Number);
+        // Formato italiano DD/MM/YYYY (nel caso servisse)
+        else if (/^\d{1,2}\/\d{1,2}\/\d{4}/.test(cleanDate)) {
+            const [day, month, year] = cleanDate.split('/').map(Number);
             dateObj = new Date(year, month - 1, day);
         } 
         else {
-            dateObj = new Date(d);
+            dateObj = new Date(cleanDate);
         }
     } 
     else if (typeof d === "number") {
-        // Numero seriale Excel/Google Sheets
+        // Numero seriale Excel/Google
         dateObj = new Date((d - 25569) * 86400 * 1000);
     } 
     else {
