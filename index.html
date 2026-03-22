@@ -204,8 +204,8 @@
         </div>
     </div>
 
-        <script>
-        // ⚠️ INCOLLA QUI IL TUO NUOVO LINK APP SCRIPT (dopo l'ultimo deploy)
+    <script>
+        // 🔥 INCOLLA QUI IL TUO URL PIÙ RECENTE (dopo l'ultimo Deploy)
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwq2JUb1xZR3jCYl-klO-AbuwAJHahNnlAstqLofxpbUefCbVzad3zVV2m8aTtCnr-y/exec";
         
         let members = [];
@@ -254,11 +254,11 @@
                 })
                 .catch(e => { 
                     console.error(e);
-                    alert('Errore di connessione. Controlla la Console (F12) e mandami gli errori rossi.');
+                    alert('Errore di connessione. Apri F12 → Console e mandami gli errori rossi.');
                 });
         }
 
-        // === TUTTE LE ALTRE FUNZIONI (pulite e corrette) ===
+        // === TUTTE LE FUNZIONI ORIGINALI + CORREZIONI ===
         function applySettings() {
             const title = document.getElementById('bandNameDisplay');
             title.textContent = settings.NomeBand || "Sala Prove Tracker ☁️";
@@ -272,29 +272,221 @@
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'update_settings', settings: newSettings }) }).then(() => fetchData());
         }
 
-        function populateMembers() { /* ... stessa funzione di prima ... */ }
-        function handleMemberSelectChange() { /* ... */ }
-        function closeManageMembers() { /* ... */ }
-        function addMember() { /* ... */ }
-        function deleteMember(name) { /* ... */ }
+        function populateMembers() {
+            const select = document.getElementById('payerInput');
+            const list = document.getElementById('membersListManage');
+            const currentVal = select.value;
+            select.innerHTML = '<option value="" disabled selected>Seleziona componente</option>';
+            list.innerHTML = '';
+            members.forEach(m => {
+                select.innerHTML += `<option value="${m.name}">${m.name}</option>`;
+                list.innerHTML += `<li style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px solid #D1D1D6; padding-bottom:5px;">
+                    <span style="color:${m.color}; font-weight:bold;">${m.name}</span>
+                    <button class="icon-btn" style="color:#FF3B30;" onclick="deleteMember('${m.name}')">🗑️</button>
+                </li>`;
+            });
+            select.innerHTML += `<option value="MANAGE_MEMBERS" style="font-weight:bold; color:var(--primary-blue);">⚙️ Gestisci Componenti...</option>`;
+            if(currentVal && currentVal !== 'MANAGE_MEMBERS') select.value = currentVal;
+        }
 
-        function populateRoomsDropdown() { /* ... */ }
-        function handleRoomSelectChange() { /* ... */ }
-        function cancelNewRoom() { /* ... */ }
-        function closeManageRooms() { /* ... */ }
-        function deleteRoom(id, name) { /* ... */ }
-        function saveNewRoom() { /* ... */ }
+        function handleMemberSelectChange() {
+            const select = document.getElementById('payerInput');
+            if (select.value === 'MANAGE_MEMBERS') {
+                document.getElementById('manageMembersBox').style.display = 'block';
+                select.style.display = 'none';
+                document.getElementById('mainPaymentButtons').style.display = 'none';
+            }
+        }
 
-        function calcolaTurno() { /* ... */ }
-        function updateNextRehearsalUI(data) { /* ... */ }
-        function toggleNextEdit(show) { /* ... */ }
-        function toggleNotesEdit(show) { /* ... */ }
-        function saveNextRehearsal(source) { /* ... */ }
+        function closeManageMembers() {
+            document.getElementById('manageMembersBox').style.display = 'none';
+            document.getElementById('payerInput').style.display = 'block';
+            document.getElementById('mainPaymentButtons').style.display = 'block';
+            document.getElementById('payerInput').value = ""; 
+        }
 
-        function sendPayment() { /* ... */ }
-        function deleteLastPayment() { /* ... */ }
-        function shareWhatsApp() { /* ... */ }
-        function shareTelegram() { /* ... */ }
+        function addMember() {
+            const name = document.getElementById('newMemberName').value.trim();
+            const color = document.getElementById('newMemberColor').value;
+            if(!name) return;
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'add_member', member: {name, color} }) }).then(()=>fetchData());
+        }
+        function deleteMember(name) {
+            if(confirm("Sicuro di rimuovere " + name + "?")) {
+                fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'delete_member', name: name }) }).then(()=>fetchData());
+            }
+        }
+
+        function populateRoomsDropdown() {
+            const select = document.getElementById('nextRoomSelect');
+            const list = document.getElementById('roomsListManage');
+            const currentVal = select.value; 
+            select.innerHTML = `<option value="" selected>Seleziona la sala...</option>`;
+            list.innerHTML = '';
+            customRooms.forEach(sala => { select.innerHTML += `<option value="${sala.id}">${sala.name}</option>`; });
+            select.innerHTML += `<option value="ADD_NEW" style="font-weight:bold; color:var(--primary-blue);">➕ Aggiungi nuova sala...</option>`;
+            select.innerHTML += `<option value="MANAGE_ROOMS" style="font-weight:bold; color:var(--primary-blue);">⚙️ Gestisci Sale...</option>`;
+            if(currentVal && currentVal !== 'ADD_NEW' && currentVal !== 'MANAGE_ROOMS') select.value = currentVal;
+            if (customRooms.length === 0) { 
+                list.innerHTML = '<li style="font-size:13px; color:#888;">Nessuna sala trovata nel database.</li>'; 
+            } else {
+                customRooms.forEach(sala => {
+                    list.innerHTML += `<li style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px solid #D1D1D6; padding-bottom:5px;">
+                        <span style="font-weight:bold;">${sala.name}</span>
+                        <button class="icon-btn" style="color:#FF3B30;" onclick="deleteRoom('${sala.id}', '${sala.name}')">🗑️</button>
+                    </li>`;
+                });
+            }
+        }
+
+        function handleRoomSelectChange() {
+            const select = document.getElementById('nextRoomSelect');
+            if (select.value === 'ADD_NEW') {
+                document.getElementById('newRoomForm').style.display = 'block';
+                select.style.display = 'none'; document.getElementById('mainEditButtons').style.display = 'none';
+            } else if (select.value === 'MANAGE_ROOMS') {
+                document.getElementById('manageRoomsBox').style.display = 'block';
+                select.style.display = 'none'; document.getElementById('mainEditButtons').style.display = 'none';
+            }
+        }
+
+        function cancelNewRoom() {
+            document.getElementById('newRoomForm').style.display = 'none';
+            document.getElementById('nextRoomSelect').style.display = 'block';
+            document.getElementById('mainEditButtons').style.display = 'flex';
+            document.getElementById('nextRoomSelect').value = "";
+        }
+
+        function closeManageRooms() {
+            document.getElementById('manageRoomsBox').style.display = 'none';
+            document.getElementById('nextRoomSelect').style.display = 'block';
+            document.getElementById('mainEditButtons').style.display = 'flex';
+            document.getElementById('nextRoomSelect').value = "";
+        }
+
+        function deleteRoom(id, name) {
+            if(confirm("Vuoi eliminare definitivamente la sala '" + name + "'?")) {
+                document.getElementById('fullLoader').style.display = 'flex';
+                fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'delete_room', id: id }) }).then(()=>fetchData());
+            }
+        }
+
+        function saveNewRoom() {
+            let name = document.getElementById('newRoomName').value.trim();
+            if (!name) name = "Sala Personalizzata";
+            const newRoomObj = { id: 'room_' + Date.now(), name: name, address: document.getElementById('newRoomAddress').value.trim() };
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'add_room', room: newRoomObj }) }).then(() => fetchData());
+        }
+
+        function calcolaTurno() {
+            if (payments.length === 0 || members.length === 0) return null;
+            const totals = {}; members.forEach(m => totals[m.name] = 0);
+            payments.forEach(p => { if (totals[p.payer] !== undefined) totals[p.payer]++; });
+            let minVal = Infinity; let candidati = [];
+            members.forEach(m => {
+                if (totals[m.name] < minVal) { minVal = totals[m.name]; candidati = [m]; } else if (totals[m.name] === minVal) { candidati.push(m); }
+            });
+            if (candidati.length === 1) return candidati[0];
+            for (let i = 0; i < payments.length; i++) {
+                const found = candidati.find(c => c.name === payments[i].payer);
+                if (found) { candidati = candidati.filter(c => c.name !== found.name); if (candidati.length === 1) return candidati[0]; }
+            }
+            return candidati[0];
+        }
+
+        function updateNextRehearsalUI(data) {
+            document.getElementById('nextDateInput').value = data.date ? data.date.substring(0,10) : '';
+            document.getElementById('nextTimeFrom').value = data.from || ''; 
+            document.getElementById('nextTimeTo').value = data.to || '';
+            document.getElementById('nextRoomSelect').value = data.room || ''; 
+            document.getElementById('notesInputOnly').value = data.notes || '';
+
+            const viewMode = document.getElementById('nextViewMode');
+            if (!data.date) {
+                viewMode.innerHTML = `<div class="next-box"><div style="color:#8E8E93; font-style:italic; font-size:16px;">Prossima prova in via di definizione ⏳</div></div><button onclick="toggleNextEdit(true)" style="background-color:#E5E5EA;color:#000;">Imposta Data/Luogo</button>`;
+            } else {
+                const sala = customRooms.find(s => s.id === data.room);
+                const roomHtml = sala ? `<span>📍</span><div><span style="font-weight:600;">${sala.name}</span><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sala.address||sala.name)}" target="_blank" class="maps-link">Apri su Mappe</a></div>` : '';
+                const fromTime = data.from || ''; const toTime = data.to || '';
+                const timeHtml = (fromTime && toTime) ? `<div class="next-time">🕒 Dalle ${fromTime} alle ${toTime}</div>` : '';
+                const turno = calcolaTurno();
+                const turnoHtml = turno ? `<div class="next-turn-badge"><span class="next-turn-label">Tocca pagare a:</span><span class="next-turn-name" style="color:${turno.color};">${turno.name}</span></div>` : '';
+                viewMode.innerHTML = `<div class="next-box"><div class="next-title" style="color:var(--primary-blue);">${formatDataItaliana(data.date)}</div>${timeHtml}<div style="display:flex; gap:8px; justify-content:center; align-items:flex-start;">${roomHtml}</div>${turnoHtml}</div><button onclick="toggleNextEdit(true)" style="background-color:#E5E5EA;color:#000;">Modifica Data/Luogo</button>`;
+            }
+
+            const notesBox = document.getElementById('displayRehearsalNotes');
+            if (data.notes && data.notes.trim() !== "") { 
+                notesBox.innerHTML = data.notes.replace(/\n/g, '<br>'); 
+                notesBox.style.color = '#333'; notesBox.style.fontStyle = 'normal'; 
+            } else { 
+                notesBox.innerHTML = 'Nessuna nota presente...'; 
+                notesBox.style.color = '#888'; notesBox.style.fontStyle = 'italic'; 
+            }
+        }
+        function toggleNextEdit(show) { 
+            document.getElementById('nextEditMode').style.display = show?'block':'none'; 
+            document.getElementById('nextViewMode').style.display = show?'none':'block'; 
+        }
+        function toggleNotesEdit(show) { 
+            document.getElementById('notesEditMode').style.display = show?'block':'none'; 
+            document.getElementById('notesViewMode').style.display = show?'none':'block'; 
+        }
+        function saveNextRehearsal(source) {
+            const next = { 
+                date: document.getElementById('nextDateInput').value, 
+                from: document.getElementById('nextTimeFrom').value, 
+                to: document.getElementById('nextTimeTo').value, 
+                room: document.getElementById('nextRoomSelect').value, 
+                notes: document.getElementById('notesInputOnly').value 
+            };
+            const btn = document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn');
+            btn.textContent = 'Salvataggio...';
+            btn.disabled = true;
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'next_rehearsal', next }) })
+                .then(() => { 
+                    fetchData();
+                    btn.textContent = source==='notes'?'Salva Note':'Salva Dati';
+                    btn.disabled = false;
+                    if (source === 'notes') toggleNotesEdit(false); else toggleNextEdit(false);
+                })
+                .catch(e => { 
+                    alert('Errore di rete. Riprova.');
+                    btn.textContent = source==='notes'?'Salva Note':'Salva Dati';
+                    btn.disabled = false;
+                });
+        }
+
+        function sendPayment() {
+            const date = document.getElementById('dateInput').value; const payer = document.getElementById('payerInput').value;
+            if (!date || !payer || payer === 'MANAGE_MEMBERS') { alert('Seleziona data e chi ha pagato.'); return; }
+            lastPayment = { date: date, payer: payer }; 
+            const btn = document.getElementById('saveBtn'); btn.disabled = true; btn.textContent = 'Salvataggio...';
+            let autoClearPromise = Promise.resolve();
+            if (rawNextDate) {
+                const payDateObj = new Date(date); const nextDateObj = new Date(rawNextDate);
+                payDateObj.setHours(0,0,0,0); nextDateObj.setHours(0,0,0,0);
+                if (payDateObj >= nextDateObj) { autoClearPromise = fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'clear_next_rehearsal' }) }); }
+            }
+            autoClearPromise.then(() => {
+                fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'payment', payment: { date, payer } }) })
+                .then(() => { fetchData(); btn.disabled = false; btn.textContent = 'Aggiungi Pagamento'; document.getElementById('shareBox').style.display = 'block'; });
+            });
+        }
+
+        function deleteLastPayment() {
+            if (!confirm('Sei sicuro di voler annullare l\'ultimo pagamento registrato?')) return;
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'delete_last' }) }).then(() => fetchData()).catch(() => alert('Errore di rete.'));
+        }
+        function shareWhatsApp() {
+            if(!lastPayment) return; 
+            const text = `💰 Ho registrato il pagamento della sala prove!\n📅 Data: ${formatDataItaliana(lastPayment.date)}\n🎸 Ha pagato: ${lastPayment.payer}`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        }
+        function shareTelegram() {
+            if(!lastPayment) return; 
+            const text = `💰 Ho registrato il pagamento della sala prove!\n📅 Data: ${formatDataItaliana(lastPayment.date)}\n🎸 Ha pagato: ${lastPayment.payer}`;
+            window.open(`https://t.me/share/url?url=${encodeURIComponent(text)}&text=`, '_blank');
+        }
 
         function updateConcertsUI() {
             const list = document.getElementById('concertsList'); list.innerHTML = '';
@@ -317,14 +509,15 @@
                 list.appendChild(li);
             });
         }
-
         function toggleConcertForm() { const f = document.getElementById('addConcertForm'); f.style.display = f.style.display==='block'?'none':'block'; }
         function saveConcert() {
             const date = document.getElementById('concertDate').value, name = document.getElementById('concertName').value.trim(), address = document.getElementById('concertAddress').value.trim();
             if(!date || !name) { alert('Inserisci data e nome concerto'); return; }
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'add_concert', concert: { id: 'conc_'+Date.now(), date, name, address } }) }).then(() => { toggleConcertForm(); fetchData(); });
         }
-        function deleteConcert(id) { if(confirm("Vuoi eliminare questo concerto?")) fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'delete_concert', id: id }) }).then(() => fetchData()); }
+        function deleteConcert(id) { 
+            if(confirm("Vuoi eliminare questo concerto?")) fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'delete_concert', id: id }) }).then(() => fetchData()); 
+        }
 
         function shareConcertWhatsApp(id) {
             const c = concerts.find(con => con.id === id);
@@ -339,9 +532,35 @@
             window.open(`https://t.me/share/url?url=${encodeURIComponent(location.href)}&text=${encodeURIComponent(text)}`, '_blank');
         }
 
-        function updateUI() { /* ... stessa di prima ... */ }
-        function updateHistoryUI() { /* ... */ }
-        function toggleHistory() { /* ... */ }
+        function updateUI() {
+            const chart = document.getElementById('chartContainer'); chart.innerHTML = '';
+            const totals = {}; members.forEach(m => totals[m.name] = 0);
+            payments.forEach(p => { if (totals[p.payer] !== undefined) totals[p.payer]++; });
+            const maxVal = Math.max(...Object.values(totals), 1);
+            members.forEach(m => {
+                chart.innerHTML += `<div class="stat-row"><span class="stat-name">${m.name}</span><div class="bar-container"><div class="bar-fill" style="background-color:${m.color};width:${(totals[m.name]/maxVal)*100}%"></div></div><span class="stat-count">${totals[m.name]}</span></div>`;
+            });
+            const yf = document.getElementById('yearFilter'); const cur = yf.value; yf.innerHTML = '<option value="all">Tutti</option>';
+            const years = [...new Set(payments.map(p => p.date ? p.date.substring(0,4) : null).filter(y => y))].sort().reverse();
+            years.forEach(y => { yf.innerHTML += `<option value="${y}">${y}</option>`; });
+            if (years.includes(cur)) yf.value = cur;
+            updateHistoryUI();
+        }
+
+        function updateHistoryUI() {
+            const list = document.getElementById('historyList'); list.innerHTML = '';
+            const val = document.getElementById('yearFilter').value;
+            let filtered = val === 'all' ? payments : payments.filter(p => p.date && p.date.startsWith(val));
+            filtered.forEach(p => {
+                const member = members.find(m => m.name === p.payer); const color = member ? member.color : '#000';
+                list.innerHTML += `<li class="history-item"><span class="history-date" style="margin:0">${formatDataItaliana(p.date)}</span><span class="history-name" style="color:${color}">${p.payer}</span></li>`;
+            });
+            document.getElementById('deleteLastBtn').style.display = payments.length > 0 ? 'block' : 'none';
+        }
+        function toggleHistory() {
+            const c = document.getElementById('historyContent'), i = document.getElementById('historyToggleIcon');
+            c.classList.toggle('collapsed'); i.textContent = c.classList.contains('collapsed') ? '▼' : '▲';
+        }
 
         function formatDataItaliana(dStr) {
             if (!dStr) return "";
