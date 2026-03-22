@@ -228,18 +228,18 @@
             </div>
         </div>
 
-        <!-- PULSANTE ESPORTA CSV -->
-        <button onclick="exportAllData()" style="background:#34C759; margin-top:20px; font-size:16px;">
-            📤 Esporta tutto in CSV (backup)
-        </button>
+        <!-- COPYRIGHT FOOTER -->
+        <div style="text-align: center; margin-top: 30px; margin-bottom: 20px; font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
+            &copy; 2026 Sala Prove Tracker. Tutti i diritti riservati.<br>
+            È vietata la riproduzione del codice e della grafica.<br>
+            <span style="font-style: italic; display: inline-block; margin-top: 8px;">Fatto con 🤘🏼 da Alessandro Cortinovis per i veri musicisti.</span>
+        </div>
     </div>
 
     <!-- TOAST -->
     <div id="toast"></div>
 
-<!-- FINE PARTE 1 -->
-
-        <script>
+    <script>
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwq2JUb1xZR3jCYl-klO-AbuwAJHahNnlAstqLofxpbUefCbVzad3zVV2m8aTtCnr-y/exec";
         
         let members = [];
@@ -324,18 +324,6 @@
             const isDark = document.getElementById('darkModeToggle').checked;
             document.documentElement.setAttribute('data-theme', isDark ? 'dark' : '');
             localStorage.setItem('darkMode', isDark);
-        }
-
-        function exportAllData() {
-            let csv = "Tipo,Data,Nome/Pagatore,Indirizzo/Note\n";
-            concerts.forEach(c => csv += `Concerto,${c.date},"${c.name}","${c.address||''}"\n`);
-            payments.forEach(p => csv += `Pagamento,${p.date},${p.payer}\n`);
-            const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = `band_backup_${new Date().toISOString().slice(0,10)}.csv`;
-            link.click();
-            showToast('Backup CSV scaricato!');
         }
 
         // === TUTTE LE ALTRE FUNZIONI (invariate) ===
