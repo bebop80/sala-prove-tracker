@@ -29,7 +29,7 @@
         .card { background: var(--card-bg); border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
         h2 { font-size: 18px; margin: 0 0 15px 0; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; }
         .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 14px; }
+        label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 14px; color: var(--text-main); }
         input, select, textarea { width: 100%; padding: 12px; font-size: 16px; border: 1px solid #D1D1D6; border-radius: 10px; background-color: #fff; appearance: none; }
         textarea { resize: vertical; min-height: 100px; font-family: inherit; }
         button { width: 100%; padding: 14px; background-color: var(--primary-blue); color: white; border: none; border-radius: 12px; font-size: 17px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
@@ -37,7 +37,7 @@
         .flex-row { display: flex; gap: 10px; margin-bottom: 15px; align-items:center; }
         .flex-col { flex: 1; }
         .stat-row { display: flex; align-items: center; margin-bottom: 12px; }
-        .stat-name { width: 90px; font-size: 15px; font-weight: 500; }
+        .stat-name { width: 90px; font-size: 15px; font-weight: 500; color: var(--text-main); }
         .bar-container { flex-grow: 1; background-color: #E5E5EA; height: 20px; border-radius: 6px; overflow: hidden; margin-right: 10px; }
         .bar-fill { height: 100%; width: 0%; transition: width 0.5s ease-out; border-radius: 6px; }
         .stat-count { width: 30px; text-align: right; font-weight: bold; color: var(--text-secondary); }
@@ -46,7 +46,6 @@
         .history-date { color: var(--text-secondary); font-size: 14px; margin-bottom: 4px;}
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-blue); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .refresh-btn { background: none; border: none; color: var(--primary-blue); font-size: 14px; margin-bottom: 5px; cursor: pointer; text-align: center; width: 100%; }
         .next-box { background: #F2F2F7; padding: 15px; border-radius: 12px; margin-bottom: 15px; text-align:center;}
         .next-title { font-weight: 700; font-size: 20px; margin: 0 0 5px 0; text-transform: capitalize; }
         .next-time { color: #000; font-size: 15px; margin: 0 0 10px 0; font-weight: 500; }
@@ -68,6 +67,15 @@
 
         /* TOAST */
         #toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:#333; color:white; padding:14px 24px; border-radius:14px; font-size:15px; box-shadow:0 4px 20px rgba(0,0,0,0.3); display:none; z-index:99999; white-space:pre-line; text-align:center; max-width:90%; }
+        
+        /* DARK MODE FIX (tutto leggibile) */
+        [data-theme="dark"] .history-date,
+        [data-theme="dark"] .stat-count,
+        [data-theme="dark"] .notes-box,
+        [data-theme="dark"] label,
+        [data-theme="dark"] .next-time,
+        [data-theme="dark"] .next-turn-label,
+        [data-theme="dark"] .history-item { color: var(--text-secondary); }
         
         /* DARK MODE TOGGLE */
         .theme-toggle { display:flex; align-items:center; gap:10px; font-size:15px; }
@@ -101,8 +109,7 @@
             </div>
         </div>
 
-        <button onclick="fetchData()" class="refresh-btn">🔄 Aggiorna Dati</button>
-        <p id="lastSync" style="text-align:center; font-size:12px; color:#8E8E93; margin:5px 0 15px 0;">Ultimo aggiornamento: --</p>
+        <p id="lastSync" style="text-align:center; font-size:12px; color:#8E8E93; margin:10px 0 15px 0;">Ultimo aggiornamento: --</p>
 
         <!-- PROSSIMA PROVA -->
         <div class="card">
@@ -228,7 +235,8 @@
             </div>
         </div>
 
-        <!-- COPYRIGHT FOOTER -->
+<!-- FINE PARTE 1 -->
+                <!-- COPYRIGHT FOOTER -->
         <div style="text-align: center; margin-top: 30px; margin-bottom: 20px; font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
             &copy; 2026 Sala Prove Tracker. Tutti i diritti riservati.<br>
             È vietata la riproduzione del codice e della grafica.<br>
@@ -260,7 +268,7 @@
         document.getElementById('dateInput').valueAsDate = new Date();
         fetchData();
 
-        // AUTO-REFRESH + TIMESTAMP
+        // AUTO-REFRESH ogni 3 minuti
         setInterval(() => fetchData(), 180000);
 
         function updateLastSync() {
@@ -326,7 +334,6 @@
             localStorage.setItem('darkMode', isDark);
         }
 
-        // === TUTTE LE ALTRE FUNZIONI (invariate) ===
         function applySettings() {
             const title = document.getElementById('bandNameDisplay');
             title.textContent = settings.NomeBand || "Sala Prove Tracker ☁️";
@@ -689,10 +696,7 @@
         function formatDataItaliana(d) {
             if (!d) return "";
             const dateObj = new Date(d);
-            if (isNaN(dateObj.getTime())) {
-                console.error("❌ Data non parsabile:", d);
-                return "Data non valida";
-            }
+            if (isNaN(dateObj.getTime())) return "Data non valida";
             let f = dateObj.toLocaleDateString("it-IT", {
                 weekday: "long",
                 day: "numeric",
