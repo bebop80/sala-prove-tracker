@@ -562,22 +562,23 @@
             c.classList.toggle('collapsed'); i.textContent = c.classList.contains('collapsed') ? '▼' : '▲';
         }
 
-       function formatDataItaliana(dStr) {
-    if (!dStr) return "";
+      function formatDataItaliana(d) {
+    if (!d) return "";
+
+    const dateObj = new Date(d);
     
-    // Prende solo la parte YYYY-MM-DD
-    const clean = dStr.toString().split("T")[0].split(" ")[0];
-    const [year, month, day] = clean.split("-").map(Number);
-    
-    const d = new Date(year, month - 1, day);   // crea data locale pura
-    if (isNaN(d.getTime())) return "Data non valida";
-    
-    let f = d.toLocaleDateString("it-IT", {
+    if (isNaN(dateObj.getTime())) {
+        console.error("❌ Data non parsabile:", d);
+        return "Data non valida";
+    }
+
+    let f = dateObj.toLocaleDateString("it-IT", {
         weekday: "long",
         day: "numeric",
         month: "long",
         year: "numeric"
     });
+    
     return f.charAt(0).toUpperCase() + f.slice(1);
 }
     </script>
