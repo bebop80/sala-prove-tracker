@@ -565,21 +565,41 @@
         function formatDataItaliana(d) {
     if (!d) return "";
 
+    // === DEBUG (temporaneo - puoi toglierlo dopo) ===
+    console.log("🔍 Raw date received:", d, "tipo:", typeof d);
+
     let dateObj;
+
     if (d instanceof Date) {
-        dateObj = d;                    // caso più comune dal tuo foglio Google
-    } else if (typeof d === "string") {
-        if (d.includes("-")) {
-            const [year, month, day] = d.split("-").map(Number);
+        dateObj = d;
+    } 
+    else if (typeof d === "string") {
+        // Formato YYYY-MM-DD (dal tuo codice precedente)
+        if (/^\d{4}-\d{2}-\d{2}/.test(d)) {
+            const [year, month, day] = d.split('-').map(Number);
             dateObj = new Date(year, month - 1, day);
-        } else {
+        } 
+        // Formato italiano DD/MM/YYYY (molto comune nei fogli Google)
+        else if (/^\d{1,2}\/\d{1,2}\/\d{4}/.test(d)) {
+            const [day, month, year] = d.split('/').map(Number);
+            dateObj = new Date(year, month - 1, day);
+        } 
+        else {
             dateObj = new Date(d);
         }
-    } else {
+    } 
+    else if (typeof d === "number") {
+        // Numero seriale Excel/Google Sheets
+        dateObj = new Date((d - 25569) * 86400 * 1000);
+    } 
+    else {
         dateObj = new Date(d);
     }
 
-    if (isNaN(dateObj.getTime())) return "Data non valida";
+    if (isNaN(dateObj.getTime())) {
+        console.error("❌ Data non parsabile:", d);
+        return "Data non valida";
+    }
 
     let f = dateObj.toLocaleDateString("it-IT", {
         weekday: "long",
