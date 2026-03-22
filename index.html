@@ -5,9 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Gestione Band</title>
     <style>
-        :root { --bg-color: #F2F2F7; --card-bg: #FFFFFF; --primary-blue: #007AFF; --text-main: #000000; --text-secondary: #8E8E93; }
+        :root { 
+            --bg-color: #F2F2F7; 
+            --card-bg: #FFFFFF; 
+            --primary-blue: #007AFF; 
+            --text-main: #000000; 
+            --text-secondary: #8E8E93; 
+        }
+        [data-theme="dark"] {
+            --bg-color: #1C1C1E;
+            --card-bg: #2C2C2E;
+            --text-main: #FFFFFF;
+            --text-secondary: #A0A0A0;
+        }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px; color: var(--text-main); padding-bottom: 50px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px; color: var(--text-main); padding-bottom: 80px; }
         
         #fullLoader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg-color); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         #appContent { display: none; } 
@@ -34,7 +46,7 @@
         .history-date { color: var(--text-secondary); font-size: 14px; margin-bottom: 4px;}
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-blue); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .refresh-btn { background: none; border: none; color: var(--primary-blue); font-size: 14px; margin-bottom: 10px; cursor: pointer; text-align: center; width: 100%; }
+        .refresh-btn { background: none; border: none; color: var(--primary-blue); font-size: 14px; margin-bottom: 5px; cursor: pointer; text-align: center; width: 100%; }
         .next-box { background: #F2F2F7; padding: 15px; border-radius: 12px; margin-bottom: 15px; text-align:center;}
         .next-title { font-weight: 700; font-size: 20px; margin: 0 0 5px 0; text-transform: capitalize; }
         .next-time { color: #000; font-size: 15px; margin: 0 0 10px 0; font-weight: 500; }
@@ -53,6 +65,12 @@
         .icon-btn { background:none; border:none; color:var(--primary-blue); font-size:20px; padding:0; width:auto; margin-left:10px; cursor:pointer;}
         .delete-last-btn { background: none; border: 1.5px solid #FF3B30; color: #FF3B30; border-radius: 12px; padding: 12px; font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 15px; }
         .action-link { color:var(--primary-blue); font-size:14px; font-weight:600; cursor:pointer; }
+
+        /* TOAST */
+        #toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:#333; color:white; padding:14px 24px; border-radius:14px; font-size:15px; box-shadow:0 4px 20px rgba(0,0,0,0.3); display:none; z-index:99999; white-space:pre-line; text-align:center; max-width:90%; }
+        
+        /* DARK MODE TOGGLE */
+        .theme-toggle { display:flex; align-items:center; gap:10px; font-size:15px; }
     </style>
 </head>
 <body>
@@ -71,6 +89,12 @@
             <input type="text" id="bandNameInput" style="margin-bottom:10px;">
             <label>Colore del Nome</label>
             <input type="color" id="bandColorInput" style="height:50px; padding:0; margin-bottom:10px;">
+            
+            <div class="theme-toggle" style="margin:15px 0;">
+                <label>🌙 Dark Mode</label>
+                <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()">
+            </div>
+            
             <div class="flex-row">
                 <button onclick="saveBandSettings()">Salva</button>
                 <button onclick="toggleBandSettings(false)" style="background:#FF3B30;">Chiudi</button>
@@ -78,6 +102,7 @@
         </div>
 
         <button onclick="fetchData()" class="refresh-btn">🔄 Aggiorna Dati</button>
+        <p id="lastSync" style="text-align:center; font-size:12px; color:#8E8E93; margin:5px 0 15px 0;">Ultimo aggiornamento: --</p>
 
         <!-- PROSSIMA PROVA -->
         <div class="card">
@@ -202,9 +227,19 @@
                 </button>
             </div>
         </div>
+
+        <!-- PULSANTE ESPORTA CSV -->
+        <button onclick="exportAllData()" style="background:#34C759; margin-top:20px; font-size:16px;">
+            📤 Esporta tutto in CSV (backup)
+        </button>
     </div>
 
-    <script>
+    <!-- TOAST -->
+    <div id="toast"></div>
+
+<!-- FINE PARTE 1 -->
+
+        <script>
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwq2JUb1xZR3jCYl-klO-AbuwAJHahNnlAstqLofxpbUefCbVzad3zVV2m8aTtCnr-y/exec";
         
         let members = [];
@@ -216,8 +251,23 @@
         let lastPayment = null; 
         let currentNextRehearsal = {};
 
+        // CARICA DARK MODE
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            document.getElementById('darkModeToggle').checked = true;
+        }
+
         document.getElementById('dateInput').valueAsDate = new Date();
         fetchData();
+
+        // AUTO-REFRESH + TIMESTAMP
+        setInterval(() => fetchData(), 180000);
+
+        function updateLastSync() {
+            const now = new Date();
+            const time = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('lastSync').textContent = `Ultimo aggiornamento: ${time}`;
+        }
 
         function fetchData() {
             document.getElementById('fullLoader').style.display = 'flex';
@@ -255,13 +305,40 @@
                     
                     document.getElementById('fullLoader').style.display = 'none';
                     document.getElementById('appContent').style.display = 'block';
+                    updateLastSync();
                 })
                 .catch(e => { 
                     console.error(e);
-                    alert('Errore di connessione. Apri F12 → Console e mandami gli errori rossi.');
+                    showToast('Errore di connessione. Riprova.');
                 });
         }
 
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 2800);
+        }
+
+        function toggleDarkMode() {
+            const isDark = document.getElementById('darkModeToggle').checked;
+            document.documentElement.setAttribute('data-theme', isDark ? 'dark' : '');
+            localStorage.setItem('darkMode', isDark);
+        }
+
+        function exportAllData() {
+            let csv = "Tipo,Data,Nome/Pagatore,Indirizzo/Note\n";
+            concerts.forEach(c => csv += `Concerto,${c.date},"${c.name}","${c.address||''}"\n`);
+            payments.forEach(p => csv += `Pagamento,${p.date},${p.payer}\n`);
+            const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `band_backup_${new Date().toISOString().slice(0,10)}.csv`;
+            link.click();
+            showToast('Backup CSV scaricato!');
+        }
+
+        // === TUTTE LE ALTRE FUNZIONI (invariate) ===
         function applySettings() {
             const title = document.getElementById('bandNameDisplay');
             title.textContent = settings.NomeBand || "Sala Prove Tracker ☁️";
@@ -462,7 +539,7 @@
                     if (source === 'notes') toggleNotesEdit(false); else toggleNextEdit(false);
                 })
                 .catch(e => { 
-                    alert('Errore di rete. Riprova.');
+                    showToast('Errore di rete. Riprova.');
                     btn.textContent = source==='notes'?'Salva Note':'Salva Dati';
                     btn.disabled = false;
                 });
@@ -505,7 +582,7 @@
         function sendPayment() {
             const date = document.getElementById('dateInput').value; 
             const payer = document.getElementById('payerInput').value;
-            if (!date || !payer || payer === 'MANAGE_MEMBERS') { alert('Seleziona data e chi ha pagato.'); return; }
+            if (!date || !payer || payer === 'MANAGE_MEMBERS') { showToast('Seleziona data e chi ha pagato.'); return; }
             
             lastPayment = { date: date, payer: payer }; 
             const btn = document.getElementById('saveBtn'); btn.disabled = true; btn.textContent = 'Salvataggio...';
@@ -534,7 +611,7 @@
 
         function deleteLastPayment() {
             if (!confirm('Sei sicuro di voler annullare l\'ultimo pagamento registrato?')) return;
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'delete_last' }) }).then(() => fetchData()).catch(() => alert('Errore di rete.'));
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'delete_last' }) }).then(() => fetchData()).catch(() => showToast('Errore di rete.'));
         }
         function shareWhatsApp() {
             if(!lastPayment) return; 
@@ -571,7 +648,7 @@
         function toggleConcertForm() { const f = document.getElementById('addConcertForm'); f.style.display = f.style.display==='block'?'none':'block'; }
         function saveConcert() {
             const date = document.getElementById('concertDate').value, name = document.getElementById('concertName').value.trim(), address = document.getElementById('concertAddress').value.trim();
-            if(!date || !name) { alert('Inserisci data e nome concerto'); return; }
+            if(!date || !name) { showToast('Inserisci data e nome concerto'); return; }
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'add_concert', concert: { id: 'conc_'+Date.now(), date, name, address } }) }).then(() => { toggleConcertForm(); fetchData(); });
         }
         function deleteConcert(id) { 
