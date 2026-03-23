@@ -99,7 +99,7 @@
             <input type="color" id="bandColorInput" style="height:50px; padding:0; margin-bottom:10px;">
             
             <div class="theme-toggle" style="margin:15px 0;">
-                <label>🌙 Dark Mode</label>
+                <label style="color:#000000 !important;">🌙 Dark Mode</label>
                 <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()">
             </div>
             
@@ -483,7 +483,7 @@
                 viewMode.innerHTML = `<div class="next-box"><div style="color:#8E8E93; font-style:italic; font-size:16px;">Prossima prova in via di definizione ⏳</div></div><button onclick="toggleNextEdit(true)" style="background-color:#E5E5EA;color:#000;">Imposta Data/Luogo</button>`;
             } else {
                 const sala = customRooms.find(s => s.id === data.room);
-                const roomHtml = sala ? `<span>📍</span><div><span style="font-weight:600;">${sala.name}</span><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sala.address||sala.name)}" target="_blank" class="maps-link">Apri su Mappe</a></div>` : '';
+                const roomHtml = sala ? `<span>📍</span><div><span style="font-weight:600;color:#000000 !important;">${sala.name}</span><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sala.address||sala.name)}" target="_blank" class="maps-link">Apri su Mappe</a></div>` : '';
                 const fromTime = data.from || ''; const toTime = data.to || '';
                 const timeHtml = (fromTime && toTime) ? `<div class="next-time">🕒 Dalle ${fromTime} alle ${toTime}</div>` : '';
                 const turno = calcolaTurno();
