@@ -407,7 +407,7 @@
                 method: 'POST',
                 body: JSON.stringify({
                     type: 'add_future_rehearsal',
-                    rehearsal: { id: 'fut_' + Date.now(), date, from, to, room, payer: '' }  // payer vuoto
+                    rehearsal: { id: 'fut_' + Date.now(), date, from, to, room, payer: '' }
                 })
             }).then(() => {
                 toggleFutureRehearsalForm();
@@ -426,7 +426,8 @@
                 li.className = 'history-item';
                 li.innerHTML = `
                     <div style="flex-grow:1;">
-                        <div class="history-date">${formatDataItaliana(r.date)}</div>
+                        <!-- DATA RISALTATA (più grande, grassetto, colore blu) -->
+                        <div class="history-date" style="font-size:17px; font-weight:700; color:var(--primary-blue);">${formatDataItaliana(r.date)}</div>
                         ${r.from && r.to ? `<div style="font-weight:700;">🕒 ${r.from} - ${r.to}</div>` : ''}
                         <div style="font-weight:600; color:#000000 !important;">${roomName}</div>
                         ${mapsLink ? `<a href="${mapsLink}" target="_blank" class="maps-link">📍 Apri su Mappe</a>` : ''}
@@ -494,7 +495,7 @@
                         const sortedFuture = [...futureRehearsals].sort((a, b) => new Date(a.date) - new Date(b.date));
                         const toPromote = sortedFuture[0];
                         
-                        const turno = calcolaTurno();           // ← calcolo qui, solo ora
+                        const turno = calcolaTurno();
                         const newPayer = turno ? turno.name : 'condivisa';
                         
                         const newNext = {
