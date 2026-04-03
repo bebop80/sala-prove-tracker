@@ -161,7 +161,7 @@
 
 <!-- FINE PARTE 1 -->
 
-        <!-- PROVE FUTURE (subito dopo Prossima Prova, come richiesto) -->
+        <!-- PROVE FUTURE (subito sotto Prossima Prova) -->
         <div class="card">
             <div class="history-header">
                 <h2 class="history-title">Prove Future 🎸</h2>
@@ -374,7 +374,7 @@
             .catch(() => showToast('Errore di rete. Riprova.'));
         }
 
-        // === PROVE FUTURE (chi paga calcolato automaticamente) ===
+        // === PROVE FUTURE ===
         function toggleFutureRehearsalForm() {
             const f = document.getElementById('addFutureRehearsalForm');
             f.style.display = f.style.display === 'block' ? 'none' : 'block';
@@ -397,7 +397,6 @@
 
             if (!date) { showToast('Inserisci almeno la data'); return; }
 
-            // Calcolo automatico di chi paga (come nella Prossima Prova)
             const turno = calcolaTurno();
             const payer = turno ? turno.name : 'condivisa';
 
@@ -475,7 +474,166 @@
             window.open(`https://t.me/share/url?url=${encodeURIComponent(location.href)}&text=${encodeURIComponent(text)}`, '_blank');
         }
 
+        // === NUOVA LOGICA RICHIESTA: promozione automatica prova futura ===
+        function sendPayment() {
+            const date = document.getElementById('dateInput').value; 
+            const payer = document.getElementById('payerInput').value;
+            if (!date || !payer || payer === 'MANAGE_MEMBERS') { showToast('Seleziona data e chi ha pagato.'); return; }
+            
+            lastPayment = { date: date, payer: payer }; 
+            const btn = document.getElementById('saveBtn'); btn.disabled = true; btn.textContent = 'Salvataggio...';
+            
+            let autoClearPromise = Promise.resolve();
+            if (rawNextDate) {
+                const payDateObj = new Date(date); 
+                const nextDateObj = new Date(rawNextDate);
+                payDateObj.setHours(0,0,0,0); 
+                nextDateObj.setHours(0,0,0,0);
+                if (payDateObj.getTime() === nextDateObj.getTime()) { 
+                    // DATA COINCIDE → promuovi la prossima prova futura (se esiste)
+                    if (futureRehearsals.length > 0) {
+                        const sortedFuture = [...futureRehearsals].sort((a, b) => new Date(a.date) - new Date(b.date));
+                        const toPromote = sortedFuture[0];
+                        
+                        const newNext = {
+                            date: toPromote.date,
+                            from: toPromote.from || '',
+                            to: toPromote.to || '',
+                            room: toPromote.room || '',
+                            notes: ''
+                        };
+                        
+                        autoClearPromise = fetch(GOOGLE_SCRIPT_URL, { 
+                            method: 'POST', 
+                            body: JSON.stringify({ type: 'next_rehearsal', next: newNext }) 
+                        }).then(() => {
+                            return fetch(GOOGLE_SCRIPT_URL, { 
+                                method: 'POST', 
+                                body: JSON.stringify({ type: 'delete_future_rehearsal', id: toPromote.id }) 
+                            });
+                        });
+                    } else {
+                        // nessuna futura → svuota come prima
+                        autoClearPromise = fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'clear_next_rehearsal' }) });
+                    }
+                }
+            }
+
+            autoClearPromise.then(() => {
+                fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'payment', payment: { date, payer } }) })
+                .then(() => { 
+                    fetchData(); 
+                    btn.disabled = false; 
+                    btn.textContent = 'Aggiungi Pagamento'; 
+                    document.getElementById('shareBox').style.display = 'block'; 
+                });
+            });
+        }
+
         // === FUNZIONI PRECEDENTI INVARIATE ===
+        function deleteLastPayment() {
+            if (!confirm('Sei sicuro di voler annullare l\'ultimo pagamento registrato?')) return;
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'delete_last' }) }).then(() => fetchData()).catch(() => showToast('Errore di rete.'));
+        }
+        function shareWhatsApp() {
+            if(!lastPayment) return; 
+            const text = `💰 Ho registrato il pagamento della sala prove!\n📅 Data: ${formatDataItaliana(lastPayment.date)}\n🎸 Ha pagato: ${lastPayment.payer}`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        }
+        function shareTelegram() {
+            if(!lastPayment) return; 
+            const text = `💰 Ho registrato il pagamento della sala prove!\n📅 Data: ${formatDataItaliana(lastPayment.date)}\n🎸 Ha pagato: ${lastPayment.payer}`;
+            window.open(`https://t.me/share/url?url=${encodeURIComponent(text)}&text=`, '_blank');
+        }
+
+        function updateConcertsUI() {
+            const list = document.getElementById('concertsList'); list.innerHTML = '';
+            concerts.sort((a, b) => new Date(a.date) - new Date(b.date));
+            const years = [...new Set(concerts.map(c => c.date ? c.date.substring(0,4) : null).filter(y => y))].sort().reverse();
+            const yf = document.getElementById('concertYearFilter'); const cur = yf.value; yf.innerHTML = '<option value="all">Tutti</option>';
+            years.forEach(y => { yf.innerHTML += `<option value="${y}">${y}</option>`; });
+            if (years.includes(cur)) yf.value = cur;
+            const today = new Date(); today.setHours(0,0,0,0);
+            let nextId = null; for(let c of concerts) { if(new Date(c.date) >= today) { nextId = c.id; break; } }
+            let filtered = yf.value === 'all' ? concerts : concerts.filter(c => c.date && c.date.startsWith(yf.value));
+            filtered.forEach(c => {
+                const li = document.createElement('li'); li.className = 'history-item';
+                if(new Date(c.date) < today) li.classList.add('concert-past'); 
+                if(c.id === nextId) li.classList.add('concert-next');
+                li.innerHTML = `<div style="flex-grow:1;"><div class="history-date">${formatDataItaliana(c.date)}</div><div style="font-weight:700; ${c.id===nextId?'color:var(--primary-blue); font-size:18px;':''}">${c.name} ${c.id===nextId?'⭐':''}</div><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.address||c.name)}" target="_blank" class="maps-link" style="margin-top:2px;">📍 ${c.address||'Mappa'}</a></div>
+                <button class="icon-btn" style="color:#FF3B30;" onclick="deleteConcert('${c.id}')">🗑️</button>
+                <button class="icon-btn" style="color:#25D366;margin-left:5px;" onclick="shareConcertWhatsApp('${c.id}')">WA</button>
+                <button class="icon-btn" style="color:#0088cc;margin-left:5px;" onclick="shareConcertTelegram('${c.id}')">TG</button>`;
+                list.appendChild(li);
+            });
+        }
+        function toggleConcertForm() { const f = document.getElementById('addConcertForm'); f.style.display = f.style.display==='block'?'none':'block'; }
+        function saveConcert() {
+            const date = document.getElementById('concertDate').value, name = document.getElementById('concertName').value.trim(), address = document.getElementById('concertAddress').value.trim();
+            if(!date || !name) { showToast('Inserisci data e nome concerto'); return; }
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'add_concert', concert: { id: 'conc_'+Date.now(), date, name, address } }) }).then(() => { toggleConcertForm(); fetchData(); });
+        }
+        function deleteConcert(id) { 
+            if(confirm("Vuoi eliminare questo concerto?")) fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'delete_concert', id: id }) }).then(() => fetchData()); 
+        }
+
+        function shareConcertWhatsApp(id) {
+            const c = concerts.find(con => con.id === id);
+            if (!c) return;
+            const text = `🎤 Concerto: "${c.name}"\n📅 ${formatDataItaliana(c.date)}\n📍 ${c.address || 'Indirizzo da verificare'}`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        }
+        function shareConcertTelegram(id) {
+            const c = concerts.find(con => con.id === id);
+            if (!c) return;
+            const text = `🎤 ${c.name} - ${formatDataItaliana(c.date)} - ${c.address || ''}`;
+            window.open(`https://t.me/share/url?url=${encodeURIComponent(location.href)}&text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        function updateUI() {
+            const chart = document.getElementById('chartContainer'); chart.innerHTML = '';
+            const totals = {}; members.forEach(m => totals[m.name] = 0);
+            payments.forEach(p => { if (totals[p.payer] !== undefined) totals[p.payer]++; });
+            const maxVal = Math.max(...Object.values(totals), 1);
+            members.forEach(m => {
+                chart.innerHTML += `<div class="stat-row"><span class="stat-name">${m.name}</span><div class="bar-container"><div class="bar-fill" style="background-color:${m.color};width:${(totals[m.name]/maxVal)*100}%"></div></div><span class="stat-count">${totals[m.name]}</span></div>`;
+            });
+            const yf = document.getElementById('yearFilter'); const cur = yf.value; yf.innerHTML = '<option value="all">Tutti</option>';
+            const years = [...new Set(payments.map(p => p.date ? p.date.substring(0,4) : null).filter(y => y))].sort().reverse();
+            years.forEach(y => { yf.innerHTML += `<option value="${y}">${y}</option>`; });
+            if (years.includes(cur)) yf.value = cur;
+            updateHistoryUI();
+        }
+
+        function updateHistoryUI() {
+            const list = document.getElementById('historyList'); list.innerHTML = '';
+            const val = document.getElementById('yearFilter').value;
+            let filtered = val === 'all' ? payments : payments.filter(p => p.date && p.date.startsWith(val));
+            filtered.forEach(p => {
+                const member = members.find(m => m.name === p.payer); const color = member ? member.color : '#000';
+                list.innerHTML += `<li class="history-item"><span class="history-date" style="margin:0">${formatDataItaliana(p.date)}</span><span class="history-name" style="color:${color}">${p.payer}</span></li>`;
+            });
+            document.getElementById('deleteLastBtn').style.display = payments.length > 0 ? 'block' : 'none';
+        }
+        function toggleHistory() {
+            const c = document.getElementById('historyContent'), i = document.getElementById('historyToggleIcon');
+            c.classList.toggle('collapsed'); i.textContent = c.classList.contains('collapsed') ? '▼' : '▲';
+        }
+
+        function formatDataItaliana(d) {
+            if (!d) return "";
+            const dateObj = new Date(d);
+            if (isNaN(dateObj.getTime())) return "Data non valida";
+            let f = dateObj.toLocaleDateString("it-IT", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+                year: "numeric"
+            });
+            return f.charAt(0).toUpperCase() + f.slice(1);
+        }
+
+        // (tutte le altre funzioni precedenti rimangono invariate - populateMembers, calcolaTurno, updateNextRehearsalUI, shareNext..., ecc.)
         function applySettings() {
             const title = document.getElementById('bandNameDisplay');
             title.textContent = settings.NomeBand || "Sala Prove Tracker ☁️";
@@ -714,138 +872,6 @@
             text += `💰 Tocca pagare a: ${turnoName}`;
 
             window.open(`https://t.me/share/url?url=${encodeURIComponent(location.href)}&text=${encodeURIComponent(text)}`, '_blank');
-        }
-
-        function sendPayment() {
-            const date = document.getElementById('dateInput').value; 
-            const payer = document.getElementById('payerInput').value;
-            if (!date || !payer || payer === 'MANAGE_MEMBERS') { showToast('Seleziona data e chi ha pagato.'); return; }
-            
-            lastPayment = { date: date, payer: payer }; 
-            const btn = document.getElementById('saveBtn'); btn.disabled = true; btn.textContent = 'Salvataggio...';
-            
-            let autoClearPromise = Promise.resolve();
-            if (rawNextDate) {
-                const payDateObj = new Date(date); 
-                const nextDateObj = new Date(rawNextDate);
-                payDateObj.setHours(0,0,0,0); 
-                nextDateObj.setHours(0,0,0,0);
-                if (payDateObj >= nextDateObj) { 
-                    autoClearPromise = fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'clear_next_rehearsal' }) }); 
-                }
-            }
-
-            autoClearPromise.then(() => {
-                fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'payment', payment: { date, payer } }) })
-                .then(() => { 
-                    fetchData(); 
-                    btn.disabled = false; 
-                    btn.textContent = 'Aggiungi Pagamento'; 
-                    document.getElementById('shareBox').style.display = 'block'; 
-                });
-            });
-        }
-
-        function deleteLastPayment() {
-            if (!confirm('Sei sicuro di voler annullare l\'ultimo pagamento registrato?')) return;
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'delete_last' }) }).then(() => fetchData()).catch(() => showToast('Errore di rete.'));
-        }
-        function shareWhatsApp() {
-            if(!lastPayment) return; 
-            const text = `💰 Ho registrato il pagamento della sala prove!\n📅 Data: ${formatDataItaliana(lastPayment.date)}\n🎸 Ha pagato: ${lastPayment.payer}`;
-            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-        }
-        function shareTelegram() {
-            if(!lastPayment) return; 
-            const text = `💰 Ho registrato il pagamento della sala prove!\n📅 Data: ${formatDataItaliana(lastPayment.date)}\n🎸 Ha pagato: ${lastPayment.payer}`;
-            window.open(`https://t.me/share/url?url=${encodeURIComponent(text)}&text=`, '_blank');
-        }
-
-        function updateConcertsUI() {
-            const list = document.getElementById('concertsList'); list.innerHTML = '';
-            concerts.sort((a, b) => new Date(a.date) - new Date(b.date));
-            const years = [...new Set(concerts.map(c => c.date ? c.date.substring(0,4) : null).filter(y => y))].sort().reverse();
-            const yf = document.getElementById('concertYearFilter'); const cur = yf.value; yf.innerHTML = '<option value="all">Tutti</option>';
-            years.forEach(y => { yf.innerHTML += `<option value="${y}">${y}</option>`; });
-            if (years.includes(cur)) yf.value = cur;
-            const today = new Date(); today.setHours(0,0,0,0);
-            let nextId = null; for(let c of concerts) { if(new Date(c.date) >= today) { nextId = c.id; break; } }
-            let filtered = yf.value === 'all' ? concerts : concerts.filter(c => c.date && c.date.startsWith(yf.value));
-            filtered.forEach(c => {
-                const li = document.createElement('li'); li.className = 'history-item';
-                if(new Date(c.date) < today) li.classList.add('concert-past'); 
-                if(c.id === nextId) li.classList.add('concert-next');
-                li.innerHTML = `<div style="flex-grow:1;"><div class="history-date">${formatDataItaliana(c.date)}</div><div style="font-weight:700; ${c.id===nextId?'color:var(--primary-blue); font-size:18px;':''}">${c.name} ${c.id===nextId?'⭐':''}</div><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.address||c.name)}" target="_blank" class="maps-link" style="margin-top:2px;">📍 ${c.address||'Mappa'}</a></div>
-                <button class="icon-btn" style="color:#FF3B30;" onclick="deleteConcert('${c.id}')">🗑️</button>
-                <button class="icon-btn" style="color:#25D366;margin-left:5px;" onclick="shareConcertWhatsApp('${c.id}')">WA</button>
-                <button class="icon-btn" style="color:#0088cc;margin-left:5px;" onclick="shareConcertTelegram('${c.id}')">TG</button>`;
-                list.appendChild(li);
-            });
-        }
-        function toggleConcertForm() { const f = document.getElementById('addConcertForm'); f.style.display = f.style.display==='block'?'none':'block'; }
-        function saveConcert() {
-            const date = document.getElementById('concertDate').value, name = document.getElementById('concertName').value.trim(), address = document.getElementById('concertAddress').value.trim();
-            if(!date || !name) { showToast('Inserisci data e nome concerto'); return; }
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'add_concert', concert: { id: 'conc_'+Date.now(), date, name, address } }) }).then(() => { toggleConcertForm(); fetchData(); });
-        }
-        function deleteConcert(id) { 
-            if(confirm("Vuoi eliminare questo concerto?")) fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'delete_concert', id: id }) }).then(() => fetchData()); 
-        }
-
-        function shareConcertWhatsApp(id) {
-            const c = concerts.find(con => con.id === id);
-            if (!c) return;
-            const text = `🎤 Concerto: "${c.name}"\n📅 ${formatDataItaliana(c.date)}\n📍 ${c.address || 'Indirizzo da verificare'}`;
-            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-        }
-        function shareConcertTelegram(id) {
-            const c = concerts.find(con => con.id === id);
-            if (!c) return;
-            const text = `🎤 ${c.name} - ${formatDataItaliana(c.date)} - ${c.address || ''}`;
-            window.open(`https://t.me/share/url?url=${encodeURIComponent(location.href)}&text=${encodeURIComponent(text)}`, '_blank');
-        }
-
-        function updateUI() {
-            const chart = document.getElementById('chartContainer'); chart.innerHTML = '';
-            const totals = {}; members.forEach(m => totals[m.name] = 0);
-            payments.forEach(p => { if (totals[p.payer] !== undefined) totals[p.payer]++; });
-            const maxVal = Math.max(...Object.values(totals), 1);
-            members.forEach(m => {
-                chart.innerHTML += `<div class="stat-row"><span class="stat-name">${m.name}</span><div class="bar-container"><div class="bar-fill" style="background-color:${m.color};width:${(totals[m.name]/maxVal)*100}%"></div></div><span class="stat-count">${totals[m.name]}</span></div>`;
-            });
-            const yf = document.getElementById('yearFilter'); const cur = yf.value; yf.innerHTML = '<option value="all">Tutti</option>';
-            const years = [...new Set(payments.map(p => p.date ? p.date.substring(0,4) : null).filter(y => y))].sort().reverse();
-            years.forEach(y => { yf.innerHTML += `<option value="${y}">${y}</option>`; });
-            if (years.includes(cur)) yf.value = cur;
-            updateHistoryUI();
-        }
-
-        function updateHistoryUI() {
-            const list = document.getElementById('historyList'); list.innerHTML = '';
-            const val = document.getElementById('yearFilter').value;
-            let filtered = val === 'all' ? payments : payments.filter(p => p.date && p.date.startsWith(val));
-            filtered.forEach(p => {
-                const member = members.find(m => m.name === p.payer); const color = member ? member.color : '#000';
-                list.innerHTML += `<li class="history-item"><span class="history-date" style="margin:0">${formatDataItaliana(p.date)}</span><span class="history-name" style="color:${color}">${p.payer}</span></li>`;
-            });
-            document.getElementById('deleteLastBtn').style.display = payments.length > 0 ? 'block' : 'none';
-        }
-        function toggleHistory() {
-            const c = document.getElementById('historyContent'), i = document.getElementById('historyToggleIcon');
-            c.classList.toggle('collapsed'); i.textContent = c.classList.contains('collapsed') ? '▼' : '▲';
-        }
-
-        function formatDataItaliana(d) {
-            if (!d) return "";
-            const dateObj = new Date(d);
-            if (isNaN(dateObj.getTime())) return "Data non valida";
-            let f = dateObj.toLocaleDateString("it-IT", {
-                weekday: "long",
-                day: "numeric",
-                month: "long",
-                year: "numeric"
-            });
-            return f.charAt(0).toUpperCase() + f.slice(1);
         }
     </script>
 </body>
