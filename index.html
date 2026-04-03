@@ -159,9 +159,68 @@
 <button onclick="toggleNotesEdit(false)" style="background-color:#FF3B30;">Annulla</button></div>
             </div>
         </div>
+        
+        <!-- REGISTRA PAGAMENTO -->
+        <div class="card">
+            <h2>Registra Pagamento 💰</h2>
+            <div class="form-group"><label>Data prova pagata</label><input type="date" id="dateInput"></div>
+            <div class="form-group">
+                <label>Chi ha pagato?</label>
+                <select id="payerInput" onchange="handleMemberSelectChange()"></select>
+            </div>
+            
+            <div id="manageMembersBox" class="manage-box">
+                <label>Aggiungi Membro</label>
+                <div class="flex-row">
+                    <input type="text" id="newMemberName" placeholder="Nome" style="flex:2;">
+                    <input type="color" id="newMemberColor" style="flex:1; height:45px; padding:0;">
+                </div>
+                <button onclick="addMember()" style="margin-bottom:15px;">➕ Aggiungi</button>
+                <label>Rimuovi Membro</label>
+                <ul id="membersListManage" style="list-style:none; padding:0; margin:0;"></ul>
+                <button onclick="closeManageMembers()" style="background:#fff; color:#000; margin-top:15px; font-size:15px;">Chiudi</button>
+            </div>
+
+            <div id="mainPaymentButtons">
+                <button id="saveBtn" onclick="sendPayment()">Aggiungi Pagamento</button>
+            </div>
+
+            <div id="shareBox" style="display:none; margin-top:20px; background:#F2F2F7; padding:15px; border-radius:12px; text-align:center;">
+                <p style="margin:0 0 10px 0; font-weight:600;">Pagamento registrato! Condividi:</p>
+                <div class="flex-row" style="margin:0;">
+                    <button onclick="shareWhatsApp()" style="background-color:#25D366; font-size:15px;">WhatsApp</button>
+                    <button onclick="shareTelegram()" style="background-color:#0088cc; font-size:15px;">Telegram</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- CONCERTI -->
+        <div class="card">
+            <div class="history-header">
+                <h2 class="history-title">Concerti 🎤</h2>
+                <select id="concertYearFilter" class="year-filter" onchange="updateConcertsUI()"><option value="all">Tutti</option></select>
+            </div>
+            
+            <ul class="history-list" id="concertsList"></ul>
+            
+            <div style="text-align: right; margin-top: 15px;">
+                <span class="action-link" onclick="toggleConcertForm()">➕ Aggiungi Concerto</span>
+            </div>
+            
+            <div id="addConcertForm" class="manage-box">
+                <div class="form-group"><label>Data</label><input type="date" id="concertDate"></div>
+                <div class="form-group"><label>Locale / Evento</label><input type="text" id="concertName" placeholder="Es. Legend Club"></div>
+                <div class="form-group"><label>Indirizzo</label><input type="text" id="concertAddress" placeholder="Es. Viale Enrico Fermi, Milano"></div>
+                <div class="flex-row" style="margin-bottom:0;">
+                    <button onclick="saveConcert()">Salva</button>
+                    <button onclick="toggleConcertForm()" style="background-color:#FF3B30;">Annulla</button>
+                </div>
+            </div>
+        </div>
 
 <!-- FINE PARTE 1 -->
-        <!-- PROVE FUTURE (subito sotto Prossima Prova, stile identico ai Concerti) -->
+
+        <!-- PROVE FUTURE (subito sotto Prossima Prova, stile identico ai concerti) -->
         <div class="card">
             <div class="history-header">
                 <h2 class="history-title">Prove Future 🎸</h2>
@@ -234,7 +293,6 @@
         let currentNextRehearsal = {};
         let futureRehearsals = [];
 
-        // CARICA DARK MODE
         if (localStorage.getItem('darkMode') === 'true') {
             document.documentElement.setAttribute('data-theme', 'dark');
             document.getElementById('darkModeToggle').checked = true;
@@ -243,7 +301,6 @@
         document.getElementById('dateInput').valueAsDate = new Date();
         fetchData();
 
-        // AUTO-REFRESH
         setInterval(() => fetchData(), 180000);
 
         function updateLastSync() {
@@ -320,11 +377,11 @@
             .catch(() => showToast('Errore di rete. Riprova.'));
         }
 
-        // === FUNZIONI PROVE FUTURE (con sala prove popolata correttamente) ===
+        // === PROVE FUTURE ===
         function toggleFutureRehearsalForm() {
             const f = document.getElementById('addFutureRehearsalForm');
             f.style.display = f.style.display === 'block' ? 'none' : 'block';
-            if (f.style.display === 'block') populateFutureRoomSelect();   // popola le sale
+            if (f.style.display === 'block') populateFutureRoomSelect();
         }
 
         function populateFutureRoomSelect() {
@@ -338,9 +395,7 @@
         function populateFuturePayerSelect() {
             const select = document.getElementById('futurePayerSelect');
             select.innerHTML = '<option value="condivisa">Spesa condivisa</option>';
-            members.forEach(m => {
-                select.innerHTML += `<option value="${m.name}">${m.name}</option>`;
-            });
+            members.forEach(m => select.innerHTML += `<option value="${m.name}">${m.name}</option>`);
         }
 
         function saveFutureRehearsal() {
@@ -426,7 +481,6 @@
             window.open(`https://t.me/share/url?url=${encodeURIComponent(location.href)}&text=${encodeURIComponent(text)}`, '_blank');
         }
 
-        // === FUNZIONI PRECEDENTI INVARIATE ===
         function applySettings() {
             const title = document.getElementById('bandNameDisplay');
             title.textContent = settings.NomeBand || "Sala Prove Tracker ☁️";
