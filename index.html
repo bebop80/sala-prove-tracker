@@ -4,715 +4,1026 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Gestione Band</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        :root { 
-            --bg-color: #F2F2F7; 
-            --card-bg: #FFFFFF; 
-            --primary-blue: #007AFF; 
-            --text-main: #000000; 
-            --text-secondary: #8E8E93; 
+        :root {
+            --bg: #F4F4F6;
+            --surface: #FFFFFF;
+            --surface-2: #F0F0F3;
+            --surface-3: #E6E6EB;
+            --border: #DDDDE4;
+            --border-strong: #C8C8D2;
+            --accent: #2C5FE4;
+            --accent-dim: rgba(44,95,228,0.08);
+            --accent-glow: rgba(44,95,228,0.18);
+            --text: #111118;
+            --text-2: #5C5C6E;
+            --text-3: #9898A8;
+            --red: #D93636;
+            --green: #1A9E5C;
+            --blue: #2387D4;
+            --orange: #C96B00;
+            --radius: 12px;
+            --radius-sm: 8px;
         }
-        [data-theme="dark"] {
-            --bg-color: #1C1C1E;
-            --card-bg: #2C2C2E;
-            --text-main: #FFFFFF;
-            --text-secondary: #A0A0A0;
-        }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px; color: var(--text-main); padding-bottom: 80px; }
-        
-        #fullLoader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg-color); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        #appContent { display: none; } 
 
-        h1 { text-align: center; font-weight: 800; margin-bottom: 5px; font-size: 28px; cursor:pointer; }
-        .edit-hint { text-align:center; font-size:11px; color:var(--text-secondary); margin-bottom:20px; margin-top:-5px;}
-        .card { background: var(--card-bg); border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        h2 { font-size: 18px; margin: 0 0 15px 0; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 14px; color: var(--text-main); }
-        input, select, textarea { width: 100%; padding: 12px; font-size: 16px; border: 1px solid #D1D1D6; border-radius: 10px; background-color: #fff; appearance: none; }
-        textarea { resize: vertical; min-height: 100px; font-family: inherit; }
-        button { width: 100%; padding: 14px; background-color: var(--primary-blue); color: white; border: none; border-radius: 12px; font-size: 17px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
-        .flex-row { display: flex; gap: 10px; margin-bottom: 15px; align-items:center; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 0 0 100px 0;
+        }
+
+        /* ── LOADER ── */
+        #fullLoader {
+            position: fixed; inset: 0;
+            background: var(--bg);
+            z-index: 9999;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center; gap: 16px;
+        }
+        .loader-ring {
+            width: 40px; height: 40px; border-radius: 50%;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            animation: spin 0.9s linear infinite;
+        }
+        .loader-text {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px; color: var(--text-3);
+            letter-spacing: 0.1em; text-transform: uppercase;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #appContent { display: none; }
+
+        /* ── HEADER ── */
+        .app-header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 28px 20px 16px;
+        }
+        .header-row { display: flex; align-items: flex-start; justify-content: space-between; }
+        #bandNameDisplay {
+            font-family: 'Syne', sans-serif;
+            font-size: 26px; font-weight: 800;
+            letter-spacing: -0.03em;
+            color: var(--accent);
+            line-height: 1; cursor: pointer;
+        }
+        .edit-hint {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px; color: var(--text-3);
+            letter-spacing: 0.07em; margin-top: 5px;
+        }
+        #lastSync {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px; color: var(--text-3);
+            letter-spacing: 0.06em;
+            text-align: center; padding: 10px 0 0;
+        }
+
+        /* ── SETTINGS BOX ── */
+        #bandSettingsBox { padding: 12px 16px 0; }
+        .settings-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+        .settings-title {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px; letter-spacing: 0.12em;
+            text-transform: uppercase; color: var(--text-3);
+            margin-bottom: 16px;
+        }
+        .theme-toggle {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 0; border-top: 1px solid var(--border); margin-top: 12px;
+        }
+        .theme-toggle-label { font-size: 13px; color: var(--text-2); }
+        .switch { position: relative; width: 40px; height: 22px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; inset: 0; cursor: pointer;
+            background: var(--surface-3); border-radius: 22px;
+            border: 1px solid var(--border);
+            transition: background 0.2s;
+        }
+        .slider:before {
+            content: ''; position: absolute;
+            height: 14px; width: 14px; left: 3px; bottom: 3px;
+            background: var(--text-3); border-radius: 50%;
+            transition: transform 0.2s, background 0.2s;
+        }
+        input:checked + .slider { background: var(--accent-dim); border-color: var(--accent-glow); }
+        input:checked + .slider:before { transform: translateX(18px); background: var(--accent); }
+
+        /* ── LAYOUT ── */
+        .main { padding: 0 16px; }
+
+        .section-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+            color: var(--text-3);
+            padding: 24px 0 10px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+        /* ── CARDS ── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px; margin-bottom: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+        .card-title {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+            color: var(--text-3); margin-bottom: 16px;
+        }
+
+        /* ── NEXT REHEARSAL ── */
+        .next-rehearsal-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden; margin-bottom: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+        .card-header {
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface-2);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .card-header .card-title { margin-bottom: 0; }
+        .card-body { padding: 20px; }
+
+        .next-date-display {
+            font-family: 'Syne', sans-serif;
+            font-size: 22px; font-weight: 700;
+            color: var(--text); line-height: 1.1;
+            margin-bottom: 6px; text-transform: capitalize;
+        }
+        .next-time-display {
+            font-family: 'DM Mono', monospace;
+            font-size: 13px; color: var(--text-2); margin-bottom: 16px;
+        }
+        .next-room-display {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 8px 14px;
+            background: var(--surface-2); border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 13px; font-weight: 600; color: var(--text);
+            margin-bottom: 10px;
+        }
+        .next-room-display .dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--accent); flex-shrink: 0;
+        }
+        .maps-link {
+            display: inline-block;
+            font-family: 'DM Mono', monospace;
+            font-size: 11px; letter-spacing: 0.05em;
+            color: var(--accent); text-decoration: none;
+        }
+        .turn-badge {
+            display: inline-flex; align-items: center; gap: 12px;
+            padding: 11px 18px;
+            background: var(--accent-dim); border: 1px solid var(--accent-glow);
+            border-radius: var(--radius-sm); margin-top: 14px;
+        }
+        .turn-label {
+            font-family: 'DM Mono', monospace; font-size: 10px;
+            letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3);
+        }
+        .turn-name { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; }
+
+        .undefined-box {
+            padding: 20px; background: var(--surface-2);
+            border-radius: var(--radius-sm);
+            font-family: 'DM Mono', monospace;
+            font-size: 12px; color: var(--text-3);
+            letter-spacing: 0.06em; text-align: center;
+        }
+
+        /* ── NOTES ── */
+        .notes-box {
+            padding: 16px;
+            background: #FFFBF0;
+            border-left: 3px solid #E8A000;
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            font-size: 14px; color: var(--text-2);
+            line-height: 1.65; min-height: 52px;
+        }
+
+        /* ── MANAGE BOX ── */
+        .manage-box {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px; margin-top: 12px; display: none;
+        }
+
+        /* ── FORMS ── */
+        .form-group { margin-bottom: 14px; }
+        label {
+            display: block; margin-bottom: 6px;
+            font-size: 10px; font-weight: 600;
+            letter-spacing: 0.08em; text-transform: uppercase;
+            color: var(--text-3); font-family: 'DM Mono', monospace;
+        }
+        input[type="text"], input[type="date"], input[type="time"], select, textarea {
+            width: 100%; padding: 11px 14px; font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            background: var(--surface); color: var(--text);
+            border: 1px solid var(--border); border-radius: var(--radius-sm);
+            outline: none; appearance: none; -webkit-appearance: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-dim);
+        }
+        input[type="color"] {
+            width: 100%; height: 44px; padding: 4px;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); cursor: pointer;
+        }
+        textarea { resize: vertical; min-height: 100px; line-height: 1.5; }
+        select option { background: var(--surface); color: var(--text); }
+        .flex-row { display: flex; gap: 10px; margin-bottom: 14px; align-items: flex-end; }
         .flex-col { flex: 1; }
-        .stat-row { display: flex; align-items: center; margin-bottom: 12px; }
-        .stat-name { width: 90px; font-size: 15px; font-weight: 500; color: var(--text-main); }
-        .bar-container { flex-grow: 1; background-color: #E5E5EA; height: 20px; border-radius: 6px; overflow: hidden; margin-right: 10px; }
-        .bar-fill { height: 100%; width: 0%; transition: width 0.5s ease-out; border-radius: 6px; }
-        .stat-count { width: 30px; text-align: right; font-weight: bold; color: var(--text-secondary); }
-        .history-list { list-style: none; padding: 0; margin: 0; }
-        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #E5E5EA; }
-        .history-date { color: var(--text-secondary); font-size: 14px; margin-bottom: 4px;}
-        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-blue); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .next-box { background: #F2F2F7; padding: 15px; border-radius: 12px; margin-bottom: 15px; text-align:center;}
-        .next-title { font-weight: 700; font-size: 20px; margin: 0 0 5px 0; text-transform: capitalize; }
-        .next-time { color: #000; font-size: 15px; margin: 0 0 10px 0; font-weight: 500; }
-        .maps-link { color: var(--primary-blue); text-decoration: none; font-weight: 600; display: block; margin-top: 10px; font-size: 14px; }
-        .notes-box { background: #FFF9C4; padding: 15px; border-radius: 8px; font-size: 15px; color: #333; border-left: 4px solid #FBC02D; line-height: 1.4; min-height: 50px; }
-        .next-turn-badge { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; padding: 9px 16px; border-radius: 20px; background-color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.10); justify-content:center;}
-        .next-turn-label { color: var(--text-secondary); font-weight: 400; font-size: 13px; }
-        .next-turn-name { font-size: 15px; font-weight: 700; }
-        .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .history-title { font-size: 18px; margin: 0; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-        .year-filter { padding: 6px 12px; border-radius: 8px; border: 1px solid #D1D1D6; font-size: 14px; background: white; font-weight: 600; width: auto; }
-        .history-content { display: block; } .history-content.collapsed { display: none; }
-        .concert-past { text-decoration: line-through; opacity: 0.6; }
-        .concert-next { border: 2px solid var(--primary-blue); border-radius: 12px; padding: 12px; background-color: #E5F1FF; margin: 10px 0; }
-        .manage-box { background: #E5E5EA; padding: 15px; border-radius: 12px; margin-top: 10px; display: none; }
-        .icon-btn { background:none; border:none; color:var(--primary-blue); font-size:20px; padding:0; width:auto; margin-left:10px; cursor:pointer;}
-        .delete-last-btn { background: none; border: 1.5px solid #FF3B30; color: #FF3B30; border-radius: 12px; padding: 12px; font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 15px; }
-        .action-link { color:var(--primary-blue); font-size:14px; font-weight:600; cursor:pointer; }
 
-        /* TOAST */
-        #toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:#333; color:white; padding:14px 24px; border-radius:14px; font-size:15px; box-shadow:0 4px 20px rgba(0,0,0,0.3); display:none; z-index:99999; white-space:pre-line; text-align:center; max-width:90%; }
-        
-        /* DARK MODE FIX (leggibilità nome saletta e label) */
-        [data-theme="dark"] .next-box span[style*="font-weight:600"],
-        [data-theme="dark"] label {
-            color: #000000 !important;
+        /* ── BUTTONS ── */
+        .btn {
+            display: block; width: 100%; padding: 13px 20px;
+            font-family: 'DM Mono', monospace;
+            font-size: 12px; font-weight: 500;
+            letter-spacing: 0.1em; text-transform: uppercase;
+            border: none; border-radius: var(--radius-sm);
+            cursor: pointer; transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s;
         }
-        
-        /* DARK MODE TOGGLE */
-        .theme-toggle { display:flex; align-items:center; gap:10px; font-size:15px; }
+        .btn:active { transform: scale(0.98); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-primary {
+            background: var(--accent); color: #fff;
+            box-shadow: 0 2px 8px rgba(44,95,228,0.25);
+        }
+        .btn-primary:hover { box-shadow: 0 4px 14px rgba(44,95,228,0.35); }
+        .btn-secondary { background: var(--surface-2); color: var(--text-2); border: 1px solid var(--border); }
+        .btn-danger { background: transparent; color: var(--red); border: 1px solid #EAB0B0; }
+        .btn-warning { background: transparent; color: var(--orange); border: 1px solid #E8C87A; }
+        .btn-green { background: var(--green); color: #fff; box-shadow: 0 2px 8px rgba(26,158,92,0.2); }
+        .btn-blue { background: var(--blue); color: #fff; }
+        .btn-sm { padding: 8px 14px; font-size: 11px; width: auto; display: inline-block; }
+        .icon-btn {
+            background: none; border: none; color: var(--text-3);
+            font-size: 14px; padding: 5px 7px; cursor: pointer;
+            width: auto; border-radius: 4px; transition: color 0.15s, background 0.15s;
+        }
+        .icon-btn:hover { color: var(--red); background: #FEF0F0; }
+
+        /* ── STATS ── */
+        .stat-row { display: flex; align-items: center; margin-bottom: 14px; gap: 12px; }
+        .stat-name { width: 88px; font-size: 13px; font-weight: 500; color: var(--text-2); flex-shrink: 0; }
+        .bar-container { flex-grow: 1; background: var(--surface-3); height: 7px; border-radius: 4px; overflow: hidden; }
+        .bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s cubic-bezier(0.23,1,0.32,1); }
+        .stat-count { width: 24px; text-align: right; font-family: 'DM Mono', monospace; font-size: 13px; color: var(--text-3); }
+
+        /* ── LISTS ── */
+        .history-list { list-style: none; }
+        .history-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 0; border-bottom: 1px solid var(--border);
+        }
+        .history-item:last-child { border-bottom: none; }
+        .history-date { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-3); margin-bottom: 3px; }
+        .history-name { font-size: 14px; font-weight: 600; }
+        .concert-past { opacity: 0.45; }
+        .concert-past .concert-title { text-decoration: line-through; }
+        .concert-next {
+            background: var(--accent-dim); border: 1px solid var(--accent-glow);
+            border-radius: var(--radius-sm); padding: 14px; margin: 8px 0;
+        }
+        .concert-item-inner { flex-grow: 1; }
+        .concert-title { font-weight: 700; font-size: 14px; margin-bottom: 2px; }
+        .concert-actions { display: flex; gap: 4px; align-items: center; }
+        .share-btn {
+            font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.08em;
+            padding: 4px 8px; border-radius: 4px; border: none; cursor: pointer;
+            font-weight: 600; background: none; width: auto;
+        }
+        .share-btn.wa { color: var(--green); border: 1px solid rgba(26,158,92,0.3); }
+        .share-btn.tg { color: var(--blue); border: 1px solid rgba(35,135,212,0.3); }
+
+        /* ── HISTORY HEADER ── */
+        .history-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+        .history-title {
+            font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.14em;
+            text-transform: uppercase; color: var(--text-3);
+            cursor: pointer; display: flex; align-items: center; gap: 6px;
+        }
+        .year-filter {
+            padding: 6px 10px; border-radius: var(--radius-sm);
+            border: 1px solid var(--border); font-size: 12px;
+            background: var(--surface-2); color: var(--text-2);
+            width: auto; font-family: 'DM Mono', monospace;
+        }
+        .action-link {
+            font-family: 'DM Mono', monospace; font-size: 11px;
+            letter-spacing: 0.08em; text-transform: uppercase;
+            color: var(--accent); cursor: pointer;
+        }
+        .history-content.collapsed { display: none; }
+
+        /* ── SHARE BOX ── */
+        #shareBox {
+            background: var(--surface-2); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); padding: 16px;
+            margin-top: 16px; text-align: center; display: none;
+        }
+        .share-label {
+            font-family: 'DM Mono', monospace; font-size: 10px;
+            letter-spacing: 0.1em; text-transform: uppercase;
+            color: var(--text-3); margin-bottom: 12px; display: block;
+        }
+
+        /* ── FOOTER ── */
+        .app-footer {
+            text-align: center; padding: 32px 20px 16px;
+            font-family: 'DM Mono', monospace; font-size: 10px;
+            color: var(--text-3); letter-spacing: 0.06em; line-height: 1.8;
+            border-top: 1px solid var(--border); margin-top: 20px;
+        }
+
+        /* ── TOAST ── */
+        #toast {
+            position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
+            background: var(--text); color: #fff;
+            padding: 12px 22px; border-radius: var(--radius-sm);
+            font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: 0.06em;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            display: none; z-index: 99999;
+            white-space: pre-line; text-align: center; max-width: 88%;
+        }
+
+        @keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+        .card, .next-rehearsal-card { animation: fadeUp 0.25s ease both; }
     </style>
 </head>
 <body>
-    
-    <div id="fullLoader">
-        <div class="spinner"></div>
-        <p style="margin-top:20px; font-weight:600; color:#555;">Sincronizzazione dati...</p>
+
+<!-- LOADER -->
+<div id="fullLoader">
+    <div class="loader-ring"></div>
+    <p class="loader-text">Sincronizzazione dati</p>
+</div>
+
+<div id="appContent">
+
+    <!-- HEADER -->
+    <div class="app-header">
+        <div class="header-row">
+            <div>
+                <div id="bandNameDisplay" onclick="toggleBandSettings(true)">Sala Prove Tracker</div>
+                <div class="edit-hint">Tocca per personalizzare</div>
+            </div>
+        </div>
+        <p id="lastSync">Ultimo aggiornamento: --</p>
     </div>
 
-    <div id="appContent">
-        <h1 id="bandNameDisplay" onclick="toggleBandSettings(true)">Sala Prove Tracker ☁️</h1>
-        <div class="edit-hint">Tocca il nome per personalizzarlo</div>
-        
-        <div id="bandSettingsBox" class="card" style="display:none; text-align:center; background:#FFF9C4;">
-            <label>Nome della Band</label>
-            <input type="text" id="bandNameInput" style="margin-bottom:10px;">
-            <label>Colore del Nome</label>
-            <input type="color" id="bandColorInput" style="height:50px; padding:0; margin-bottom:10px;">
-            
-            <div class="theme-toggle" style="margin:15px 0;">
-                <label style="color:#000000 !important;">🌙 Dark Mode</label>
-                <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()">
+    <!-- SETTINGS BOX -->
+    <div id="bandSettingsBox" style="display:none;">
+        <div class="settings-card" style="margin:12px 0 0;">
+            <p class="settings-title">Impostazioni Band</p>
+            <div class="form-group">
+                <label>Nome della Band</label>
+                <input type="text" id="bandNameInput">
             </div>
-            
-            <div class="flex-row">
-                <button onclick="saveBandSettings()">Salva</button>
-                <button onclick="toggleBandSettings(false)" style="background:#FF3B30;">Chiudi</button>
+            <div class="form-group">
+                <label>Colore Nome</label>
+                <input type="color" id="bandColorInput">
+            </div>
+            <div class="theme-toggle">
+                <span class="theme-toggle-label">Dark Mode</span>
+                <label class="switch">
+                    <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="flex-row" style="margin-top:16px; margin-bottom:0;">
+                <button class="btn btn-primary" onclick="saveBandSettings()">Salva</button>
+                <button class="btn btn-danger" onclick="toggleBandSettings(false)">Chiudi</button>
             </div>
         </div>
+    </div>
 
-        <p id="lastSync" style="text-align:center; font-size:12px; color:#8E8E93; margin:10px 0 15px 0;">Ultimo aggiornamento: --</p>
+    <div class="main">
 
         <!-- PROSSIMA PROVA -->
-        <div class="card">
-            <h2>Prossima Prova 🎸</h2>
-            <div id="nextViewMode"></div>
-            
-            <div id="nextEditMode" style="display:none;">
-                <div class="form-group"><label>Data</label><input type="date" id="nextDateInput"></div>
-                <div class="flex-row">
-                    <div class="flex-col"><label>Dalle</label><input type="time" id="nextTimeFrom"></div>
-                    <div class="flex-col"><label>Alle</label><input type="time" id="nextTimeTo"></div>
-                </div>
-                
-                <div class="form-group">
-                    <label>Sala Prove</label>
-                    <select id="nextRoomSelect" onchange="handleRoomSelectChange()"></select>
-                    
-                    <div id="newRoomForm" class="manage-box">
-                        <label>Nome Nuova Sala</label><input type="text" id="newRoomName">
-                        <label style="margin-top:10px;">Indirizzo (opzionale)</label><input type="text" id="newRoomAddress">
-                        <div class="flex-row" style="margin-top:10px;">
-                            <button onclick="saveNewRoom()">Salva Sala</button>
-                            <button onclick="cancelNewRoom()" style="background:#FF3B30;">Annulla</button>
+        <div class="section-label">Prossima Prova</div>
+        <div class="next-rehearsal-card">
+            <div class="card-header">
+                <span class="card-title">Sessione</span>
+                <span id="rehearsalStatusDot" style="width:7px;height:7px;border-radius:50%;background:var(--text-3);display:inline-block;"></span>
+            </div>
+            <div class="card-body">
+                <div id="nextViewMode"></div>
+                <div id="nextEditMode" style="display:none;">
+                    <div class="form-group"><label>Data</label><input type="date" id="nextDateInput"></div>
+                    <div class="flex-row">
+                        <div class="flex-col"><label>Dalle</label><input type="time" id="nextTimeFrom"></div>
+                        <div class="flex-col"><label>Alle</label><input type="time" id="nextTimeTo"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Sala Prove</label>
+                        <select id="nextRoomSelect" onchange="handleRoomSelectChange()"></select>
+                        <div id="newRoomForm" class="manage-box">
+                            <label>Nome Nuova Sala</label>
+                            <input type="text" id="newRoomName" style="margin-bottom:10px;">
+                            <label>Indirizzo (opzionale)</label>
+                            <input type="text" id="newRoomAddress" style="margin-bottom:12px;">
+                            <div class="flex-row" style="margin-bottom:0;">
+                                <button class="btn btn-primary" onclick="saveNewRoom()">Salva Sala</button>
+                                <button class="btn btn-danger" onclick="cancelNewRoom()">Annulla</button>
+                            </div>
+                        </div>
+                        <div id="manageRoomsBox" class="manage-box">
+                            <label style="margin-bottom:10px;">Gestisci Sale</label>
+                            <ul id="roomsListManage"></ul>
+                            <button class="btn btn-secondary" onclick="closeManageRooms()" style="margin-top:12px;">Chiudi</button>
                         </div>
                     </div>
-                    
-                    <div id="manageRoomsBox" class="manage-box">
-                        <label style="margin-bottom:10px;">Gestisci Sale:</label>
-                        <ul id="roomsListManage" style="list-style:none; padding:0; margin:0;"></ul>
-                        <button onclick="closeManageRooms()" style="background:#fff; color:#000; margin-top:15px; font-size:15px;">Chiudi</button>
+                    <div class="flex-row" id="mainEditButtons" style="flex-wrap:wrap; margin-bottom:0;">
+                        <button id="saveRehearsalBtn" class="btn btn-primary" onclick="saveNextRehearsal('rehearsal')">Salva</button>
+                        <button class="btn btn-warning" onclick="setRehearsalAsToDefine()">Da definire</button>
+                        <button class="btn btn-danger" onclick="toggleNextEdit(false)">Annulla</button>
                     </div>
-                </div>
-                
-                <div class="flex-row" id="mainEditButtons">
-                    <button id="saveRehearsalBtn" onclick="saveNextRehearsal('rehearsal')">Salva Dati</button>
-                    <button onclick="setRehearsalAsToDefine()" style="background:#FF9500; color:white;">Prove da definire</button>
-                    <button onclick="toggleNextEdit(false)" style="background-color:#FF3B30;">Annulla</button>
                 </div>
             </div>
 
-            <hr style="border:0; border-top:1px solid #E5E5EA; margin: 20px 0;">
-            <h2>Bacheca Note 📝</h2>
-            <div id="notesViewMode">
-                <div id="displayRehearsalNotes" class="notes-box">Nessuna nota presente...</div>
-                <button onclick="toggleNotesEdit(true)" style="background-color:#FFF9C4; color:#B77904; margin-top:10px;">✏️ Modifica Note</button>
-            </div>
-            <div id="notesEditMode" style="display:none;">
-                <textarea id="notesInputOnly" placeholder="Scrivi note per la band..."></textarea>
-                <div class="flex-row" style="margin-top:10px;"><button id="saveNotesBtn" onclick="saveNextRehearsal('notes')" style="background-color:#FF9500;">Salva Note</button>
-<button onclick="toggleNotesEdit(false)" style="background-color:#FF3B30;">Annulla</button></div>
+            <!-- NOTE -->
+            <div style="border-top:1px solid var(--border); padding:16px 20px;">
+                <p class="card-title" style="margin-bottom:12px;">Bacheca Note</p>
+                <div id="notesViewMode">
+                    <div id="displayRehearsalNotes" class="notes-box">Nessuna nota presente...</div>
+                    <button class="btn btn-secondary" onclick="toggleNotesEdit(true)" style="margin-top:12px;">Modifica Note</button>
+                </div>
+                <div id="notesEditMode" style="display:none;">
+                    <textarea id="notesInputOnly" placeholder="Scrivi note per la band..."></textarea>
+                    <div class="flex-row" style="margin-top:10px; margin-bottom:0;">
+                        <button id="saveNotesBtn" class="btn btn-primary" onclick="saveNextRehearsal('notes')">Salva Note</button>
+                        <button class="btn btn-danger" onclick="toggleNotesEdit(false)">Annulla</button>
+                    </div>
+                </div>
             </div>
         </div>
-        
-        <!-- REGISTRA PAGAMENTO -->
+
+        <!-- PAGAMENTI -->
+        <div class="section-label">Pagamenti</div>
         <div class="card">
-            <h2>Registra Pagamento 💰</h2>
-            <div class="form-group"><label>Data prova pagata</label><input type="date" id="dateInput"></div>
+            <p class="card-title">Registra Pagamento</p>
+            <div class="form-group">
+                <label>Data prova pagata</label>
+                <input type="date" id="dateInput">
+            </div>
             <div class="form-group">
                 <label>Chi ha pagato?</label>
                 <select id="payerInput" onchange="handleMemberSelectChange()"></select>
             </div>
-            
             <div id="manageMembersBox" class="manage-box">
                 <label>Aggiungi Membro</label>
                 <div class="flex-row">
                     <input type="text" id="newMemberName" placeholder="Nome" style="flex:2;">
-                    <input type="color" id="newMemberColor" style="flex:1; height:45px; padding:0;">
+                    <input type="color" id="newMemberColor" style="flex:0 0 50px; height:44px; padding:4px;">
                 </div>
-                <button onclick="addMember()" style="margin-bottom:15px;">➕ Aggiungi</button>
+                <button class="btn btn-primary" onclick="addMember()" style="margin-bottom:14px;">Aggiungi</button>
                 <label>Rimuovi Membro</label>
-                <ul id="membersListManage" style="list-style:none; padding:0; margin:0;"></ul>
-                <button onclick="closeManageMembers()" style="background:#fff; color:#000; margin-top:15px; font-size:15px;">Chiudi</button>
+                <ul id="membersListManage"></ul>
+                <button class="btn btn-secondary" onclick="closeManageMembers()" style="margin-top:12px;">Chiudi</button>
             </div>
-
             <div id="mainPaymentButtons">
-                <button id="saveBtn" onclick="sendPayment()">Aggiungi Pagamento</button>
+                <button id="saveBtn" class="btn btn-primary" onclick="sendPayment()">Registra Pagamento</button>
             </div>
-
-            <div id="shareBox" style="display:none; margin-top:20px; background:#F2F2F7; padding:15px; border-radius:12px; text-align:center;">
-                <p style="margin:0 0 10px 0; font-weight:600;">Pagamento registrato! Condividi:</p>
-                <div class="flex-row" style="margin:0;">
-                    <button onclick="shareWhatsApp()" style="background-color:#25D366; font-size:15px;">WhatsApp</button>
-                    <button onclick="shareTelegram()" style="background-color:#0088cc; font-size:15px;">Telegram</button>
+            <div id="shareBox">
+                <span class="share-label">Pagamento registrato — Condividi</span>
+                <div class="flex-row" style="margin-bottom:0;">
+                    <button class="btn btn-green" onclick="shareWhatsApp()">WhatsApp</button>
+                    <button class="btn btn-blue" onclick="shareTelegram()">Telegram</button>
                 </div>
             </div>
         </div>
-        
-        <!-- CONCERTI -->
+
+        <!-- RIEPILOGO SPESE -->
+        <div class="card">
+            <p class="card-title">Riepilogo Spese</p>
+            <div id="chartContainer"></div>
+        </div>
+
+        <!-- STORICO PAGAMENTI -->
         <div class="card">
             <div class="history-header">
-                <h2 class="history-title">Concerti 🎤</h2>
-                <select id="concertYearFilter" class="year-filter" onchange="updateConcertsUI()"><option value="all">Tutti</option></select>
+                <span class="history-title" onclick="toggleHistory()">
+                    Storico Pagamenti <span id="historyToggleIcon">▼</span>
+                </span>
+                <select id="yearFilter" class="year-filter" onchange="updateHistoryUI()">
+                    <option value="all">Tutti</option>
+                </select>
             </div>
-            
+            <div id="historyContent" class="history-content collapsed">
+                <ul class="history-list" id="historyList"></ul>
+                <button class="btn btn-danger" id="deleteLastBtn" onclick="deleteLastPayment()" style="display:none; margin-top:16px;">
+                    Annulla ultimo pagamento
+                </button>
+            </div>
+        </div>
+
+        <!-- CONCERTI -->
+        <div class="section-label">Concerti</div>
+        <div class="card">
+            <div class="history-header">
+                <span class="card-title" style="margin-bottom:0;">Calendario</span>
+                <select id="concertYearFilter" class="year-filter" onchange="updateConcertsUI()">
+                    <option value="all">Tutti</option>
+                </select>
+            </div>
             <ul class="history-list" id="concertsList"></ul>
-            
-            <div style="text-align: right; margin-top: 15px;">
-                <span class="action-link" onclick="toggleConcertForm()">➕ Aggiungi Concerto</span>
+            <div style="margin-top:16px; text-align:right;">
+                <span class="action-link" onclick="toggleConcertForm()">+ Aggiungi Concerto</span>
             </div>
-            
             <div id="addConcertForm" class="manage-box">
                 <div class="form-group"><label>Data</label><input type="date" id="concertDate"></div>
                 <div class="form-group"><label>Locale / Evento</label><input type="text" id="concertName" placeholder="Es. Legend Club"></div>
                 <div class="form-group"><label>Indirizzo</label><input type="text" id="concertAddress" placeholder="Es. Viale Enrico Fermi, Milano"></div>
                 <div class="flex-row" style="margin-bottom:0;">
-                    <button onclick="saveConcert()">Salva</button>
-                    <button onclick="toggleConcertForm()" style="background-color:#FF3B30;">Annulla</button>
+                    <button class="btn btn-primary" onclick="saveConcert()">Salva</button>
+                    <button class="btn btn-danger" onclick="toggleConcertForm()">Annulla</button>
                 </div>
             </div>
         </div>
 
-        <div class="card"><h2>Riepilogo Spese</h2><div id="chartContainer"></div></div>
-        
-        <div class="card">
-            <div class="history-header">
-                <h2 class="history-title" onclick="toggleHistory()">Storico Pagamenti <span id="historyToggleIcon">▼</span></h2>
-                <select id="yearFilter" class="year-filter" onchange="updateHistoryUI()"><option value="all">Tutti</option></select>
-            </div>
-            <div id="historyContent" class="history-content collapsed">
-                <ul class="history-list" id="historyList"></ul>
-                <button class="delete-last-btn" id="deleteLastBtn" onclick="deleteLastPayment()" style="display:none;">
-                    🗑️ Annulla ultimo pagamento inserito
-                </button>
-            </div>
-        </div>
+    </div><!-- /main -->
 
-<!-- FINE PARTE 1 -->
-                <!-- COPYRIGHT FOOTER -->
-        <div style="text-align: center; margin-top: 30px; margin-bottom: 20px; font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
-            &copy; 2026 Sala Prove Tracker. Tutti i diritti riservati.<br>
-            È vietata la riproduzione del codice e della grafica.<br>
-            <span style="font-style: italic; display: inline-block; margin-top: 8px;">Fatto con 🤘🏼 da Alessandro Cortinovis per i veri musicisti.</span>
-        </div>
+    <div class="app-footer">
+        &copy; 2026 Sala Prove Tracker. Tutti i diritti riservati.<br>
+        Fatto con cura da Alessandro Cortinovis.
     </div>
 
-    <!-- TOAST -->
-    <div id="toast"></div>
+</div><!-- /appContent -->
 
-    <script>
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwq2JUb1xZR3jCYl-klO-AbuwAJHahNnlAstqLofxpbUefCbVzad3zVV2m8aTtCnr-y/exec";
-        
-        let members = [];
-        let payments = []; 
-        let concerts = []; 
-        let customRooms = []; 
-        let settings = {};
-        let rawNextDate = null; 
-        let lastPayment = null; 
-        let currentNextRehearsal = {};
+<div id="toast"></div>
 
-        // CARICA DARK MODE
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.documentElement.setAttribute('data-theme', 'dark');
-            document.getElementById('darkModeToggle').checked = true;
-        }
+<script>
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwq2JUb1xZR3jCYl-klO-AbuwAJHahNnlAstqLofxpbUefCbVzad3zVV2m8aTtCnr-y/exec";
 
-        document.getElementById('dateInput').valueAsDate = new Date();
-        fetchData();
+    let members = [], payments = [], concerts = [], customRooms = [], settings = {};
+    let rawNextDate = null, lastPayment = null, currentNextRehearsal = {};
 
-        // AUTO-REFRESH ogni 3 minuti
-        setInterval(() => fetchData(), 180000);
+    if (localStorage.getItem('darkMode') === 'true') {
+        document.getElementById('darkModeToggle').checked = true;
+    }
 
-        function updateLastSync() {
-            const now = new Date();
-            const time = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
-            document.getElementById('lastSync').textContent = `Ultimo aggiornamento: ${time}`;
-        }
+    document.getElementById('dateInput').valueAsDate = new Date();
+    fetchData();
+    setInterval(() => fetchData(), 180000);
 
-        function fetchData() {
-            document.getElementById('fullLoader').style.display = 'flex';
-            document.getElementById('appContent').style.display = 'none';
-            
-            const noCacheUrl = GOOGLE_SCRIPT_URL + "?t=" + new Date().getTime();
-            fetch(noCacheUrl)
-                .then(res => {
-                    if (!res.ok) throw new Error("HTTP " + res.status);
-                    return res.json();
-                })
-                .then(data => {
-                    payments = data.payments || [];
-                    concerts = data.concerts || [];
-                    customRooms = data.customRooms || [];
-                    members = data.members || [];
-                    settings = data.settings || {};
-                    
-                    applySettings();
-                    populateMembers();
-                    populateRoomsDropdown();
-                    updateUI();
-                    
-                    rawNextDate = (data.next && data.next.date) ? data.next.date : null;
-                    if (rawNextDate) {
-                        const nextD = new Date(rawNextDate);
-                        const today = new Date(); today.setHours(0,0,0,0);
-                        if (nextD < today) {
-                            data.next = {}; rawNextDate = null;
-                            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'clear_next_rehearsal' }) });
-                        }
+    function updateLastSync() {
+        const now = new Date();
+        const time = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('lastSync').textContent = `sync — ${time}`;
+    }
+
+    function fetchData() {
+        document.getElementById('fullLoader').style.display = 'flex';
+        document.getElementById('appContent').style.display = 'none';
+        fetch(GOOGLE_SCRIPT_URL + "?t=" + Date.now())
+            .then(res => { if (!res.ok) throw new Error("HTTP " + res.status); return res.json(); })
+            .then(data => {
+                payments = data.payments || [];
+                concerts = data.concerts || [];
+                customRooms = data.customRooms || [];
+                members = data.members || [];
+                settings = data.settings || {};
+                applySettings();
+                populateMembers();
+                populateRoomsDropdown();
+                updateUI();
+                rawNextDate = (data.next && data.next.date) ? data.next.date : null;
+                if (rawNextDate) {
+                    const nextD = new Date(rawNextDate);
+                    const today = new Date(); today.setHours(0,0,0,0);
+                    if (nextD < today) {
+                        data.next = {}; rawNextDate = null;
+                        fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'clear_next_rehearsal' }) });
                     }
-                    updateNextRehearsalUI(data.next);
-                    updateConcertsUI();
-                    
-                    document.getElementById('fullLoader').style.display = 'none';
-                    document.getElementById('appContent').style.display = 'block';
-                    updateLastSync();
-                })
-                .catch(e => { 
-                    console.error(e);
-                    showToast('Errore di connessione. Riprova.');
-                });
-        }
-
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            t.textContent = msg;
-            t.style.display = 'block';
-            setTimeout(() => t.style.display = 'none', 2800);
-        }
-
-        function toggleDarkMode() {
-            const isDark = document.getElementById('darkModeToggle').checked;
-            document.documentElement.setAttribute('data-theme', isDark ? 'dark' : '');
-            localStorage.setItem('darkMode', isDark);
-        }
-
-        function setRehearsalAsToDefine() {
-            fetch(GOOGLE_SCRIPT_URL, { 
-                method: 'POST', 
-                body: JSON.stringify({ type: 'clear_next_rehearsal' }) 
+                }
+                updateNextRehearsalUI(data.next || {});
+                updateConcertsUI();
+                document.getElementById('fullLoader').style.display = 'none';
+                document.getElementById('appContent').style.display = 'block';
+                updateLastSync();
             })
-            .then(() => fetchData())
-            .catch(() => showToast('Errore di rete. Riprova.'));
-        }
+            .catch(e => { console.error(e); showToast('Errore di connessione.\nRiprova.'); });
+    }
 
-        // === TUTTE LE ALTRE FUNZIONI INVARIATE (esattamente come prima) ===
-        function applySettings() {
-            const title = document.getElementById('bandNameDisplay');
-            title.textContent = settings.NomeBand || "Sala Prove Tracker ☁️";
-            title.style.color = settings.ColoreBand || "#000000";
-            document.getElementById('bandNameInput').value = settings.NomeBand || "";
-            document.getElementById('bandColorInput').value = settings.ColoreBand || "#000000";
-        }
-        function toggleBandSettings(show) { document.getElementById('bandSettingsBox').style.display = show ? 'block' : 'none'; }
-        function saveBandSettings() {
-            const newSettings = { NomeBand: document.getElementById('bandNameInput').value || "Sala Prove Tracker", ColoreBand: document.getElementById('bandColorInput').value || "#000000" };
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'update_settings', settings: newSettings }) }).then(() => fetchData());
-        }
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg; t.style.display = 'block';
+        setTimeout(() => t.style.display = 'none', 2800);
+    }
 
-        function populateMembers() {
-            const select = document.getElementById('payerInput');
-            const list = document.getElementById('membersListManage');
-            const currentVal = select.value;
-            select.innerHTML = '<option value="" disabled selected>Seleziona componente</option>';
-            list.innerHTML = '';
-            members.forEach(m => {
-                select.innerHTML += `<option value="${m.name}">${m.name}</option>`;
-                list.innerHTML += `<li style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px solid #D1D1D6; padding-bottom:5px;">
-                    <span style="color:${m.color}; font-weight:bold;">${m.name}</span>
-                    <button class="icon-btn" style="color:#FF3B30;" onclick="deleteMember('${m.name}')">🗑️</button>
+    function toggleDarkMode() {
+        localStorage.setItem('darkMode', document.getElementById('darkModeToggle').checked);
+    }
+
+    function applySettings() {
+        const title = document.getElementById('bandNameDisplay');
+        title.textContent = settings.NomeBand || "Sala Prove Tracker";
+        title.style.color = settings.ColoreBand || "var(--accent)";
+        document.getElementById('bandNameInput').value = settings.NomeBand || "";
+        document.getElementById('bandColorInput').value = settings.ColoreBand || "#2C5FE4";
+    }
+    function toggleBandSettings(show) {
+        document.getElementById('bandSettingsBox').style.display = show ? 'block' : 'none';
+    }
+    function saveBandSettings() {
+        const newSettings = {
+            NomeBand: document.getElementById('bandNameInput').value || "Sala Prove Tracker",
+            ColoreBand: document.getElementById('bandColorInput').value || "#2C5FE4"
+        };
+        fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'update_settings', settings: newSettings }) })
+            .then(() => fetchData());
+    }
+
+    function populateMembers() {
+        const select = document.getElementById('payerInput');
+        const list = document.getElementById('membersListManage');
+        const currentVal = select.value;
+        select.innerHTML = '<option value="" disabled selected>Seleziona componente</option>';
+        list.innerHTML = '';
+        members.forEach(m => {
+            select.innerHTML += `<option value="${m.name}">${m.name}</option>`;
+            list.innerHTML += `<li style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
+                <span style="color:${m.color};font-weight:600;font-size:14px;">${m.name}</span>
+                <button class="icon-btn" onclick="deleteMember('${m.name}')">✕</button>
+            </li>`;
+        });
+        select.innerHTML += `<option value="MANAGE_MEMBERS">⚙ Gestisci Componenti...</option>`;
+        if (currentVal && currentVal !== 'MANAGE_MEMBERS') select.value = currentVal;
+    }
+    function handleMemberSelectChange() {
+        if (document.getElementById('payerInput').value === 'MANAGE_MEMBERS') {
+            document.getElementById('manageMembersBox').style.display = 'block';
+            document.getElementById('payerInput').style.display = 'none';
+            document.getElementById('mainPaymentButtons').style.display = 'none';
+        }
+    }
+    function closeManageMembers() {
+        document.getElementById('manageMembersBox').style.display = 'none';
+        document.getElementById('payerInput').style.display = 'block';
+        document.getElementById('mainPaymentButtons').style.display = 'block';
+        document.getElementById('payerInput').value = "";
+    }
+    function addMember() {
+        const name = document.getElementById('newMemberName').value.trim();
+        const color = document.getElementById('newMemberColor').value;
+        if (!name) return;
+        fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'add_member', member: { name, color } }) })
+            .then(() => fetchData());
+    }
+    function deleteMember(name) {
+        if (confirm("Sicuro di rimuovere " + name + "?"))
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'delete_member', name }) })
+                .then(() => fetchData());
+    }
+
+    function populateRoomsDropdown() {
+        const select = document.getElementById('nextRoomSelect');
+        const list = document.getElementById('roomsListManage');
+        const currentVal = select.value;
+        select.innerHTML = `<option value="" selected>Seleziona la sala...</option>`;
+        list.innerHTML = '';
+        customRooms.forEach(sala => { select.innerHTML += `<option value="${sala.id}">${sala.name}</option>`; });
+        select.innerHTML += `<option value="ADD_NEW">+ Aggiungi nuova sala...</option>`;
+        select.innerHTML += `<option value="MANAGE_ROOMS">⚙ Gestisci Sale...</option>`;
+        if (currentVal && !['ADD_NEW','MANAGE_ROOMS'].includes(currentVal)) select.value = currentVal;
+        if (customRooms.length === 0) {
+            list.innerHTML = '<li style="font-size:12px;color:var(--text-3);font-family:DM Mono,monospace;padding:8px 0;">Nessuna sala nel database.</li>';
+        } else {
+            customRooms.forEach(sala => {
+                list.innerHTML += `<li style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
+                    <span style="font-size:14px;font-weight:600;">${sala.name}</span>
+                    <button class="icon-btn" onclick="deleteRoom('${sala.id}','${sala.name}')">✕</button>
                 </li>`;
             });
-            select.innerHTML += `<option value="MANAGE_MEMBERS" style="font-weight:bold; color:var(--primary-blue);">⚙️ Gestisci Componenti...</option>`;
-            if(currentVal && currentVal !== 'MANAGE_MEMBERS') select.value = currentVal;
+        }
+    }
+    function handleRoomSelectChange() {
+        const val = document.getElementById('nextRoomSelect').value;
+        if (val === 'ADD_NEW') {
+            document.getElementById('newRoomForm').style.display = 'block';
+            document.getElementById('nextRoomSelect').style.display = 'none';
+            document.getElementById('mainEditButtons').style.display = 'none';
+        } else if (val === 'MANAGE_ROOMS') {
+            document.getElementById('manageRoomsBox').style.display = 'block';
+            document.getElementById('nextRoomSelect').style.display = 'none';
+            document.getElementById('mainEditButtons').style.display = 'none';
+        }
+    }
+    function cancelNewRoom() {
+        document.getElementById('newRoomForm').style.display = 'none';
+        document.getElementById('nextRoomSelect').style.display = 'block';
+        document.getElementById('mainEditButtons').style.display = 'flex';
+        document.getElementById('nextRoomSelect').value = "";
+    }
+    function closeManageRooms() {
+        document.getElementById('manageRoomsBox').style.display = 'none';
+        document.getElementById('nextRoomSelect').style.display = 'block';
+        document.getElementById('mainEditButtons').style.display = 'flex';
+        document.getElementById('nextRoomSelect').value = "";
+    }
+    function deleteRoom(id, name) {
+        if (confirm("Eliminare la sala '" + name + "'?")) {
+            document.getElementById('fullLoader').style.display = 'flex';
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'delete_room', id }) })
+                .then(() => fetchData());
+        }
+    }
+    function saveNewRoom() {
+        let name = document.getElementById('newRoomName').value.trim() || "Sala Personalizzata";
+        const room = { id: 'room_' + Date.now(), name, address: document.getElementById('newRoomAddress').value.trim() };
+        fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'add_room', room }) })
+            .then(() => fetchData());
+    }
+
+    function calcolaTurno() {
+        if (!payments.length || !members.length) return null;
+        const totals = {};
+        members.forEach(m => totals[m.name] = 0);
+        payments.forEach(p => { if (totals[p.payer] !== undefined) totals[p.payer]++; });
+        let minVal = Infinity, candidati = [];
+        members.forEach(m => {
+            if (totals[m.name] < minVal) { minVal = totals[m.name]; candidati = [m]; }
+            else if (totals[m.name] === minVal) candidati.push(m);
+        });
+        if (candidati.length === 1) return candidati[0];
+        for (let p of payments) {
+            const found = candidati.find(c => c.name === p.payer);
+            if (found) { candidati = candidati.filter(c => c.name !== found.name); if (candidati.length === 1) return candidati[0]; }
+        }
+        return candidati[0];
+    }
+
+    function updateNextRehearsalUI(data) {
+        document.getElementById('nextDateInput').value = data.date ? data.date.substring(0,10) : '';
+        document.getElementById('nextTimeFrom').value = data.from || '';
+        document.getElementById('nextTimeTo').value = data.to || '';
+        document.getElementById('nextRoomSelect').value = data.room || '';
+        document.getElementById('notesInputOnly').value = data.notes || '';
+        currentNextRehearsal = data;
+
+        const dot = document.getElementById('rehearsalStatusDot');
+        const viewMode = document.getElementById('nextViewMode');
+
+        if (!data.date) {
+            dot.style.background = 'var(--text-3)';
+            viewMode.innerHTML = `
+                <div class="undefined-box">Nessuna prova programmata</div>
+                <button class="btn btn-secondary" onclick="toggleNextEdit(true)" style="margin-top:12px;">Imposta Data / Luogo</button>`;
+        } else {
+            dot.style.background = 'var(--accent)';
+            const sala = customRooms.find(s => s.id === data.room);
+            const roomHtml = sala ? `
+                <div class="next-room-display"><span class="dot"></span><span>${sala.name}</span></div><br>
+                <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sala.address||sala.name)}" target="_blank" class="maps-link">Apri su Maps →</a>` : '';
+            const timeHtml = (data.from && data.to) ? `<div class="next-time-display">${data.from} — ${data.to}</div>` : '';
+            const turno = calcolaTurno();
+            const turnoHtml = turno ? `
+                <div class="turn-badge">
+                    <span class="turn-label">Paga</span>
+                    <span class="turn-name" style="color:${turno.color};">${turno.name}</span>
+                </div>` : '';
+
+            viewMode.innerHTML = `
+                <div class="next-date-display">${formatDataItaliana(data.date)}</div>
+                ${timeHtml}${roomHtml}${turnoHtml}
+                <div style="display:flex;gap:8px;margin-top:18px;flex-wrap:wrap;">
+                    <button class="btn btn-green btn-sm" onclick="shareNextWhatsApp()">WhatsApp</button>
+                    <button class="btn btn-blue btn-sm" onclick="shareNextTelegram()">Telegram</button>
+                    <button class="btn btn-secondary btn-sm" onclick="toggleNextEdit(true)">Modifica</button>
+                </div>`;
         }
 
-        function handleMemberSelectChange() {
-            const select = document.getElementById('payerInput');
-            if (select.value === 'MANAGE_MEMBERS') {
-                document.getElementById('manageMembersBox').style.display = 'block';
-                select.style.display = 'none';
-                document.getElementById('mainPaymentButtons').style.display = 'none';
-            }
+        const notesBox = document.getElementById('displayRehearsalNotes');
+        if (data.notes && data.notes.trim()) {
+            notesBox.innerHTML = data.notes.replace(/\n/g,'<br>');
+            notesBox.style.color = 'var(--text-2)'; notesBox.style.fontStyle = 'normal';
+        } else {
+            notesBox.textContent = 'Nessuna nota presente...';
+            notesBox.style.color = 'var(--text-3)'; notesBox.style.fontStyle = 'italic';
         }
+    }
 
-        function closeManageMembers() {
-            document.getElementById('manageMembersBox').style.display = 'none';
-            document.getElementById('payerInput').style.display = 'block';
-            document.getElementById('mainPaymentButtons').style.display = 'block';
-            document.getElementById('payerInput').value = ""; 
+    function toggleNextEdit(show) {
+        document.getElementById('nextEditMode').style.display = show ? 'block' : 'none';
+        document.getElementById('nextViewMode').style.display = show ? 'none' : 'block';
+    }
+    function toggleNotesEdit(show) {
+        document.getElementById('notesEditMode').style.display = show ? 'block' : 'none';
+        document.getElementById('notesViewMode').style.display = show ? 'none' : 'block';
+    }
+    function setRehearsalAsToDefine() {
+        fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'clear_next_rehearsal' }) })
+            .then(() => fetchData()).catch(() => showToast('Errore di rete.'));
+    }
+    function saveNextRehearsal(source) {
+        const next = {
+            date: document.getElementById('nextDateInput').value,
+            from: document.getElementById('nextTimeFrom').value,
+            to: document.getElementById('nextTimeTo').value,
+            room: document.getElementById('nextRoomSelect').value,
+            notes: document.getElementById('notesInputOnly').value
+        };
+        const btn = document.getElementById(source==='notes' ? 'saveNotesBtn' : 'saveRehearsalBtn');
+        btn.textContent = 'Salvataggio...'; btn.disabled = true;
+        fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'next_rehearsal', next }) })
+            .then(() => {
+                fetchData();
+                btn.textContent = source==='notes' ? 'Salva Note' : 'Salva'; btn.disabled = false;
+                if (source==='notes') toggleNotesEdit(false); else toggleNextEdit(false);
+            })
+            .catch(() => { showToast('Errore di rete.'); btn.textContent = source==='notes'?'Salva Note':'Salva'; btn.disabled=false; });
+    }
+
+    function shareNextWhatsApp() {
+        if (!currentNextRehearsal.date) return;
+        const sala = customRooms.find(s => s.id === currentNextRehearsal.room);
+        const turno = calcolaTurno();
+        let text = `🎸 PROSSIMA PROVA BAND!\n\n📅 ${formatDataItaliana(currentNextRehearsal.date)}\n`;
+        if (currentNextRehearsal.from && currentNextRehearsal.to) text += `🕒 ${currentNextRehearsal.from} — ${currentNextRehearsal.to}\n`;
+        text += `📍 ${sala ? sala.name : 'N/D'}\n`;
+        if (sala && sala.address) text += `🗺️ https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sala.address)}\n`;
+        if (turno) text += `💰 Tocca pagare a: ${turno.name}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    }
+    function shareNextTelegram() {
+        if (!currentNextRehearsal.date) return;
+        const sala = customRooms.find(s => s.id === currentNextRehearsal.room);
+        const turno = calcolaTurno();
+        let text = `🎸 PROSSIMA PROVA BAND!\n\n📅 ${formatDataItaliana(currentNextRehearsal.date)}\n`;
+        if (currentNextRehearsal.from && currentNextRehearsal.to) text += `🕒 ${currentNextRehearsal.from} — ${currentNextRehearsal.to}\n`;
+        text += `📍 ${sala ? sala.name : 'N/D'}\n`;
+        if (turno) text += `💰 Tocca pagare a: ${turno.name}`;
+        window.open(`https://t.me/share/url?url=${encodeURIComponent(location.href)}&text=${encodeURIComponent(text)}`, '_blank');
+    }
+
+    function sendPayment() {
+        const date = document.getElementById('dateInput').value;
+        const payer = document.getElementById('payerInput').value;
+        if (!date || !payer || payer==='MANAGE_MEMBERS') { showToast('Seleziona data e chi ha pagato.'); return; }
+        lastPayment = { date, payer };
+        const btn = document.getElementById('saveBtn'); btn.disabled=true; btn.textContent='Salvataggio...';
+        let autoClear = Promise.resolve();
+        if (rawNextDate) {
+            const pd = new Date(date), nd = new Date(rawNextDate);
+            pd.setHours(0,0,0,0); nd.setHours(0,0,0,0);
+            if (pd >= nd) autoClear = fetch(GOOGLE_SCRIPT_URL, { method:'POST', body: JSON.stringify({ type:'clear_next_rehearsal' }) });
         }
+        autoClear.then(() =>
+            fetch(GOOGLE_SCRIPT_URL, { method:'POST', body: JSON.stringify({ type:'payment', payment:{ date, payer } }) })
+                .then(() => { fetchData(); btn.disabled=false; btn.textContent='Registra Pagamento'; document.getElementById('shareBox').style.display='block'; })
+        );
+    }
+    function deleteLastPayment() {
+        if (!confirm('Annullare l\'ultimo pagamento?')) return;
+        fetch(GOOGLE_SCRIPT_URL, { method:'POST', body: JSON.stringify({ type:'delete_last' }) })
+            .then(() => fetchData()).catch(() => showToast('Errore di rete.'));
+    }
+    function shareWhatsApp() {
+        if (!lastPayment) return;
+        window.open(`https://wa.me/?text=${encodeURIComponent(`💰 Pagamento sala prove!\n📅 ${formatDataItaliana(lastPayment.date)}\n🎸 Ha pagato: ${lastPayment.payer}`)}`, '_blank');
+    }
+    function shareTelegram() {
+        if (!lastPayment) return;
+        const text = `💰 Pagamento sala prove!\n📅 ${formatDataItaliana(lastPayment.date)}\n🎸 Ha pagato: ${lastPayment.payer}`;
+        window.open(`https://t.me/share/url?url=${encodeURIComponent(text)}&text=`, '_blank');
+    }
 
-        function addMember() {
-            const name = document.getElementById('newMemberName').value.trim();
-            const color = document.getElementById('newMemberColor').value;
-            if(!name) return;
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'add_member', member: {name, color} }) }).then(()=>fetchData());
-        }
-        function deleteMember(name) {
-            if(confirm("Sicuro di rimuovere " + name + "?")) {
-                fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'delete_member', name: name }) }).then(()=>fetchData());
-            }
-        }
-
-        function populateRoomsDropdown() {
-            const select = document.getElementById('nextRoomSelect');
-            const list = document.getElementById('roomsListManage');
-            const currentVal = select.value; 
-            select.innerHTML = `<option value="" selected>Seleziona la sala...</option>`;
-            list.innerHTML = '';
-            customRooms.forEach(sala => { select.innerHTML += `<option value="${sala.id}">${sala.name}</option>`; });
-            select.innerHTML += `<option value="ADD_NEW" style="font-weight:bold; color:var(--primary-blue);">➕ Aggiungi nuova sala...</option>`;
-            select.innerHTML += `<option value="MANAGE_ROOMS" style="font-weight:bold; color:var(--primary-blue);">⚙️ Gestisci Sale...</option>`;
-            if(currentVal && currentVal !== 'ADD_NEW' && currentVal !== 'MANAGE_ROOMS') select.value = currentVal;
-            if (customRooms.length === 0) { 
-                list.innerHTML = '<li style="font-size:13px; color:#888;">Nessuna sala trovata nel database.</li>'; 
-            } else {
-                customRooms.forEach(sala => {
-                    list.innerHTML += `<li style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px solid #D1D1D6; padding-bottom:5px;">
-                        <span style="font-weight:bold;">${sala.name}</span>
-                        <button class="icon-btn" style="color:#FF3B30;" onclick="deleteRoom('${sala.id}', '${sala.name}')">🗑️</button>
-                    </li>`;
-                });
-            }
-        }
-
-        function handleRoomSelectChange() {
-            const select = document.getElementById('nextRoomSelect');
-            if (select.value === 'ADD_NEW') {
-                document.getElementById('newRoomForm').style.display = 'block';
-                select.style.display = 'none'; document.getElementById('mainEditButtons').style.display = 'none';
-            } else if (select.value === 'MANAGE_ROOMS') {
-                document.getElementById('manageRoomsBox').style.display = 'block';
-                select.style.display = 'none'; document.getElementById('mainEditButtons').style.display = 'none';
-            }
-        }
-
-        function cancelNewRoom() {
-            document.getElementById('newRoomForm').style.display = 'none';
-            document.getElementById('nextRoomSelect').style.display = 'block';
-            document.getElementById('mainEditButtons').style.display = 'flex';
-            document.getElementById('nextRoomSelect').value = "";
-        }
-
-        function closeManageRooms() {
-            document.getElementById('manageRoomsBox').style.display = 'none';
-            document.getElementById('nextRoomSelect').style.display = 'block';
-            document.getElementById('mainEditButtons').style.display = 'flex';
-            document.getElementById('nextRoomSelect').value = "";
-        }
-
-        function deleteRoom(id, name) {
-            if(confirm("Vuoi eliminare definitivamente la sala '" + name + "'?")) {
-                document.getElementById('fullLoader').style.display = 'flex';
-                fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'delete_room', id: id }) }).then(()=>fetchData());
-            }
-        }
-
-        function saveNewRoom() {
-            let name = document.getElementById('newRoomName').value.trim();
-            if (!name) name = "Sala Personalizzata";
-            const newRoomObj = { id: 'room_' + Date.now(), name: name, address: document.getElementById('newRoomAddress').value.trim() };
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'add_room', room: newRoomObj }) }).then(() => fetchData());
-        }
-
-        function calcolaTurno() {
-            if (payments.length === 0 || members.length === 0) return null;
-            const totals = {}; members.forEach(m => totals[m.name] = 0);
-            payments.forEach(p => { if (totals[p.payer] !== undefined) totals[p.payer]++; });
-            let minVal = Infinity; let candidati = [];
-            members.forEach(m => {
-                if (totals[m.name] < minVal) { minVal = totals[m.name]; candidati = [m]; } else if (totals[m.name] === minVal) { candidati.push(m); }
-            });
-            if (candidati.length === 1) return candidati[0];
-            for (let i = 0; i < payments.length; i++) {
-                const found = candidati.find(c => c.name === payments[i].payer);
-                if (found) { candidati = candidati.filter(c => c.name !== found.name); if (candidati.length === 1) return candidati[0]; }
-            }
-            return candidati[0];
-        }
-
-        function updateNextRehearsalUI(data) {
-            document.getElementById('nextDateInput').value = data.date ? data.date.substring(0,10) : '';
-            document.getElementById('nextTimeFrom').value = data.from || ''; 
-            document.getElementById('nextTimeTo').value = data.to || '';
-            document.getElementById('nextRoomSelect').value = data.room || ''; 
-            document.getElementById('notesInputOnly').value = data.notes || '';
-
-            currentNextRehearsal = data;
-
-            const viewMode = document.getElementById('nextViewMode');
-            if (!data.date) {
-                viewMode.innerHTML = `<div class="next-box"><div style="color:#8E8E93; font-style:italic; font-size:16px;">Prossima prova in via di definizione ⏳</div></div><button onclick="toggleNextEdit(true)" style="background-color:#E5E5EA;color:#000;">Imposta Data/Luogo</button>`;
-            } else {
-                const sala = customRooms.find(s => s.id === data.room);
-                const roomHtml = sala ? `<span>📍</span><div><span style="font-weight:600; color:#000000 !important;">${sala.name}</span><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sala.address||sala.name)}" target="_blank" class="maps-link">Apri su Mappe</a></div>` : '';
-                const fromTime = data.from || ''; const toTime = data.to || '';
-                const timeHtml = (fromTime && toTime) ? `<div class="next-time">🕒 Dalle ${fromTime} alle ${toTime}</div>` : '';
-                const turno = calcolaTurno();
-                const turnoHtml = turno ? `<div class="next-turn-badge"><span class="next-turn-label">Tocca pagare a:</span><span class="next-turn-name" style="color:${turno.color};">${turno.name}</span></div>` : '';
-
-                viewMode.innerHTML = `<div class="next-box"><div class="next-title" style="color:var(--primary-blue);">${formatDataItaliana(data.date)}</div>${timeHtml}<div style="display:flex; gap:8px; justify-content:center; align-items:flex-start;">${roomHtml}</div>${turnoHtml}</div>
-                <div style="margin-top:15px; display:flex; gap:10px; justify-content:center;">
-                    <button onclick="shareNextWhatsApp()" style="background:#25D366; color:white; padding:10px 20px; border-radius:12px; font-size:15px; width:auto;">WhatsApp</button>
-                    <button onclick="shareNextTelegram()" style="background:#0088cc; color:white; padding:10px 20px; border-radius:12px; font-size:15px; width:auto;">Telegram</button>
+    function updateConcertsUI() {
+        const list = document.getElementById('concertsList'); list.innerHTML = '';
+        concerts.sort((a,b) => new Date(a.date) - new Date(b.date));
+        const years = [...new Set(concerts.map(c => c.date?.substring(0,4)).filter(Boolean))].sort().reverse();
+        const yf = document.getElementById('concertYearFilter'); const cur = yf.value;
+        yf.innerHTML = '<option value="all">Tutti</option>';
+        years.forEach(y => { yf.innerHTML += `<option value="${y}">${y}</option>`; });
+        if (years.includes(cur)) yf.value = cur;
+        const today = new Date(); today.setHours(0,0,0,0);
+        let nextId = null;
+        for (let c of concerts) { if (new Date(c.date) >= today) { nextId = c.id; break; } }
+        const filtered = yf.value==='all' ? concerts : concerts.filter(c => c.date?.startsWith(yf.value));
+        filtered.forEach(c => {
+            const li = document.createElement('li');
+            const isPast = new Date(c.date) < today;
+            const isNext = c.id === nextId;
+            li.className = isNext ? 'concert-next' : 'history-item' + (isPast ? ' concert-past' : '');
+            li.innerHTML = `
+                <div class="concert-item-inner">
+                    <div class="history-date">${formatDataItaliana(c.date)}</div>
+                    <div class="concert-title">${c.name}${isNext?` <span style="color:var(--accent);font-size:10px;font-family:'DM Mono',monospace;letter-spacing:.06em;margin-left:6px;">PROSSIMO</span>`:''}
+                    </div>
+                    <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.address||c.name)}" target="_blank" class="maps-link" style="margin-top:4px;display:inline-block;">${c.address||'Mappa'}</a>
                 </div>
-                <button onclick="toggleNextEdit(true)" style="background-color:#E5E5EA;color:#000; margin-top:10px;">Modifica Data/Luogo</button>`;
-            }
+                <div class="concert-actions">
+                    <button class="share-btn wa" onclick="shareConcertWhatsApp('${c.id}')">WA</button>
+                    <button class="share-btn tg" onclick="shareConcertTelegram('${c.id}')">TG</button>
+                    <button class="icon-btn" onclick="deleteConcert('${c.id}')">✕</button>
+                </div>`;
+            list.appendChild(li);
+        });
+    }
+    function toggleConcertForm() {
+        const f = document.getElementById('addConcertForm');
+        f.style.display = f.style.display==='block' ? 'none' : 'block';
+    }
+    function saveConcert() {
+        const date = document.getElementById('concertDate').value;
+        const name = document.getElementById('concertName').value.trim();
+        const address = document.getElementById('concertAddress').value.trim();
+        if (!date||!name) { showToast('Inserisci data e nome concerto'); return; }
+        fetch(GOOGLE_SCRIPT_URL, { method:'POST', body: JSON.stringify({ type:'add_concert', concert:{ id:'conc_'+Date.now(), date, name, address } }) })
+            .then(() => { toggleConcertForm(); fetchData(); });
+    }
+    function deleteConcert(id) {
+        if (confirm("Eliminare questo concerto?"))
+            fetch(GOOGLE_SCRIPT_URL, { method:'POST', body: JSON.stringify({ type:'delete_concert', id }) }).then(() => fetchData());
+    }
+    function shareConcertWhatsApp(id) {
+        const c = concerts.find(x => x.id===id); if (!c) return;
+        window.open(`https://wa.me/?text=${encodeURIComponent(`🎤 Concerto: "${c.name}"\n📅 ${formatDataItaliana(c.date)}\n📍 ${c.address||'Indirizzo da verificare'}`)}`, '_blank');
+    }
+    function shareConcertTelegram(id) {
+        const c = concerts.find(x => x.id===id); if (!c) return;
+        window.open(`https://t.me/share/url?url=${encodeURIComponent(location.href)}&text=${encodeURIComponent(`🎤 ${c.name} — ${formatDataItaliana(c.date)} — ${c.address||''}`)}`, '_blank');
+    }
 
-            const notesBox = document.getElementById('displayRehearsalNotes');
-            if (data.notes && data.notes.trim() !== "") { 
-                notesBox.innerHTML = data.notes.replace(/\n/g, '<br>'); 
-                notesBox.style.color = '#333'; notesBox.style.fontStyle = 'normal'; 
-            } else { 
-                notesBox.innerHTML = 'Nessuna nota presente...'; 
-                notesBox.style.color = '#888'; notesBox.style.fontStyle = 'italic'; 
-            }
-        }
+    function updateUI() {
+        const chart = document.getElementById('chartContainer'); chart.innerHTML = '';
+        const totals = {};
+        members.forEach(m => totals[m.name] = 0);
+        payments.forEach(p => { if (totals[p.payer]!==undefined) totals[p.payer]++; });
+        const maxVal = Math.max(...Object.values(totals), 1);
+        members.forEach(m => {
+            chart.innerHTML += `
+                <div class="stat-row">
+                    <span class="stat-name">${m.name}</span>
+                    <div class="bar-container"><div class="bar-fill" style="background:${m.color};width:${(totals[m.name]/maxVal)*100}%"></div></div>
+                    <span class="stat-count">${totals[m.name]}</span>
+                </div>`;
+        });
+        const yf = document.getElementById('yearFilter'); const cur = yf.value;
+        yf.innerHTML = '<option value="all">Tutti</option>';
+        const years = [...new Set(payments.map(p => p.date?.substring(0,4)).filter(Boolean))].sort().reverse();
+        years.forEach(y => { yf.innerHTML += `<option value="${y}">${y}</option>`; });
+        if (years.includes(cur)) yf.value = cur;
+        updateHistoryUI();
+    }
+    function updateHistoryUI() {
+        const list = document.getElementById('historyList'); list.innerHTML = '';
+        const val = document.getElementById('yearFilter').value;
+        const filtered = val==='all' ? payments : payments.filter(p => p.date?.startsWith(val));
+        filtered.forEach(p => {
+            const color = (members.find(m => m.name===p.payer) || {}).color || 'var(--text)';
+            list.innerHTML += `
+                <li class="history-item">
+                    <div><div class="history-date">${formatDataItaliana(p.date)}</div></div>
+                    <span class="history-name" style="color:${color}">${p.payer}</span>
+                </li>`;
+        });
+        document.getElementById('deleteLastBtn').style.display = payments.length > 0 ? 'block' : 'none';
+    }
+    function toggleHistory() {
+        const c = document.getElementById('historyContent');
+        const i = document.getElementById('historyToggleIcon');
+        c.classList.toggle('collapsed');
+        i.textContent = c.classList.contains('collapsed') ? '▼' : '▲';
+    }
 
-        function toggleNextEdit(show) { 
-            document.getElementById('nextEditMode').style.display = show?'block':'none'; 
-            document.getElementById('nextViewMode').style.display = show?'none':'block'; 
-        }
-        function toggleNotesEdit(show) { 
-            document.getElementById('notesEditMode').style.display = show?'block':'none'; 
-            document.getElementById('notesViewMode').style.display = show?'none':'block'; 
-        }
-        function saveNextRehearsal(source) {
-            const next = { 
-                date: document.getElementById('nextDateInput').value, 
-                from: document.getElementById('nextTimeFrom').value, 
-                to: document.getElementById('nextTimeTo').value, 
-                room: document.getElementById('nextRoomSelect').value, 
-                notes: document.getElementById('notesInputOnly').value 
-            };
-            const btn = document.getElementById(source==='notes'?'saveNotesBtn':'saveRehearsalBtn');
-            btn.textContent = 'Salvataggio...';
-            btn.disabled = true;
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'next_rehearsal', next }) })
-                .then(() => { 
-                    fetchData();
-                    btn.textContent = source==='notes'?'Salva Note':'Salva Dati';
-                    btn.disabled = false;
-                    if (source === 'notes') toggleNotesEdit(false); else toggleNextEdit(false);
-                })
-                .catch(e => { 
-                    showToast('Errore di rete. Riprova.');
-                    btn.textContent = source==='notes'?'Salva Note':'Salva Dati';
-                    btn.disabled = false;
-                });
-        }
-
-        function shareNextWhatsApp() {
-            if (!currentNextRehearsal.date) return;
-            const sala = customRooms.find(s => s.id === currentNextRehearsal.room);
-            const roomName = sala ? sala.name : "Sala non specificata";
-            const mapsLink = sala && sala.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sala.address)}` : "";
-            const turno = calcolaTurno();
-            const turnoName = turno ? turno.name : "da definire";
-
-            let text = `🎸 PROSSIMA PROVA BAND!\n\n`;
-            text += `📅 ${formatDataItaliana(currentNextRehearsal.date)}\n`;
-            if (currentNextRehearsal.from && currentNextRehearsal.to) text += `🕒 Dalle ${currentNextRehearsal.from} alle ${currentNextRehearsal.to}\n`;
-            text += `📍 ${roomName}\n`;
-            if (mapsLink) text += `🗺️ ${mapsLink}\n`;
-            text += `💰 Tocca pagare a: ${turnoName}`;
-
-            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-        }
-
-        function shareNextTelegram() {
-            if (!currentNextRehearsal.date) return;
-            const sala = customRooms.find(s => s.id === currentNextRehearsal.room);
-            const roomName = sala ? sala.name : "Sala non specificata";
-            const turno = calcolaTurno();
-            const turnoName = turno ? turno.name : "da definire";
-
-            let text = `🎸 PROSSIMA PROVA BAND!\n\n`;
-            text += `📅 ${formatDataItaliana(currentNextRehearsal.date)}\n`;
-            if (currentNextRehearsal.from && currentNextRehearsal.to) text += `🕒 Dalle ${currentNextRehearsal.from} alle ${currentNextRehearsal.to}\n`;
-            text += `📍 ${roomName}\n`;
-            text += `💰 Tocca pagare a: ${turnoName}`;
-
-            window.open(`https://t.me/share/url?url=${encodeURIComponent(location.href)}&text=${encodeURIComponent(text)}`, '_blank');
-        }
-
-        function sendPayment() {
-            const date = document.getElementById('dateInput').value; 
-            const payer = document.getElementById('payerInput').value;
-            if (!date || !payer || payer === 'MANAGE_MEMBERS') { showToast('Seleziona data e chi ha pagato.'); return; }
-            
-            lastPayment = { date: date, payer: payer }; 
-            const btn = document.getElementById('saveBtn'); btn.disabled = true; btn.textContent = 'Salvataggio...';
-            
-            let autoClearPromise = Promise.resolve();
-            if (rawNextDate) {
-                const payDateObj = new Date(date); 
-                const nextDateObj = new Date(rawNextDate);
-                payDateObj.setHours(0,0,0,0); 
-                nextDateObj.setHours(0,0,0,0);
-                if (payDateObj >= nextDateObj) { 
-                    autoClearPromise = fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'clear_next_rehearsal' }) }); 
-                }
-            }
-
-            autoClearPromise.then(() => {
-                fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'payment', payment: { date, payer } }) })
-                .then(() => { 
-                    fetchData(); 
-                    btn.disabled = false; 
-                    btn.textContent = 'Aggiungi Pagamento'; 
-                    document.getElementById('shareBox').style.display = 'block'; 
-                });
-            });
-        }
-
-        function deleteLastPayment() {
-            if (!confirm('Sei sicuro di voler annullare l\'ultimo pagamento registrato?')) return;
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'delete_last' }) }).then(() => fetchData()).catch(() => showToast('Errore di rete.'));
-        }
-        function shareWhatsApp() {
-            if(!lastPayment) return; 
-            const text = `💰 Ho registrato il pagamento della sala prove!\n📅 Data: ${formatDataItaliana(lastPayment.date)}\n🎸 Ha pagato: ${lastPayment.payer}`;
-            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-        }
-        function shareTelegram() {
-            if(!lastPayment) return; 
-            const text = `💰 Ho registrato il pagamento della sala prove!\n📅 Data: ${formatDataItaliana(lastPayment.date)}\n🎸 Ha pagato: ${lastPayment.payer}`;
-            window.open(`https://t.me/share/url?url=${encodeURIComponent(text)}&text=`, '_blank');
-        }
-
-        function updateConcertsUI() {
-            const list = document.getElementById('concertsList'); list.innerHTML = '';
-            concerts.sort((a, b) => new Date(a.date) - new Date(b.date));
-            const years = [...new Set(concerts.map(c => c.date ? c.date.substring(0,4) : null).filter(y => y))].sort().reverse();
-            const yf = document.getElementById('concertYearFilter'); const cur = yf.value; yf.innerHTML = '<option value="all">Tutti</option>';
-            years.forEach(y => { yf.innerHTML += `<option value="${y}">${y}</option>`; });
-            if (years.includes(cur)) yf.value = cur;
-            const today = new Date(); today.setHours(0,0,0,0);
-            let nextId = null; for(let c of concerts) { if(new Date(c.date) >= today) { nextId = c.id; break; } }
-            let filtered = yf.value === 'all' ? concerts : concerts.filter(c => c.date && c.date.startsWith(yf.value));
-            filtered.forEach(c => {
-                const li = document.createElement('li'); li.className = 'history-item';
-                if(new Date(c.date) < today) li.classList.add('concert-past'); 
-                if(c.id === nextId) li.classList.add('concert-next');
-                li.innerHTML = `<div style="flex-grow:1;"><div class="history-date">${formatDataItaliana(c.date)}</div><div style="font-weight:700; ${c.id===nextId?'color:var(--primary-blue); font-size:18px;':''}">${c.name} ${c.id===nextId?'⭐':''}</div><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.address||c.name)}" target="_blank" class="maps-link" style="margin-top:2px;">📍 ${c.address||'Mappa'}</a></div>
-                <button class="icon-btn" style="color:#FF3B30;" onclick="deleteConcert('${c.id}')">🗑️</button>
-                <button class="icon-btn" style="color:#25D366;margin-left:5px;" onclick="shareConcertWhatsApp('${c.id}')">WA</button>
-                <button class="icon-btn" style="color:#0088cc;margin-left:5px;" onclick="shareConcertTelegram('${c.id}')">TG</button>`;
-                list.appendChild(li);
-            });
-        }
-        function toggleConcertForm() { const f = document.getElementById('addConcertForm'); f.style.display = f.style.display==='block'?'none':'block'; }
-        function saveConcert() {
-            const date = document.getElementById('concertDate').value, name = document.getElementById('concertName').value.trim(), address = document.getElementById('concertAddress').value.trim();
-            if(!date || !name) { showToast('Inserisci data e nome concerto'); return; }
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'add_concert', concert: { id: 'conc_'+Date.now(), date, name, address } }) }).then(() => { toggleConcertForm(); fetchData(); });
-        }
-        function deleteConcert(id) { 
-            if(confirm("Vuoi eliminare questo concerto?")) fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'delete_concert', id: id }) }).then(() => fetchData()); 
-        }
-
-        function shareConcertWhatsApp(id) {
-            const c = concerts.find(con => con.id === id);
-            if (!c) return;
-            const text = `🎤 Concerto: "${c.name}"\n📅 ${formatDataItaliana(c.date)}\n📍 ${c.address || 'Indirizzo da verificare'}`;
-            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-        }
-        function shareConcertTelegram(id) {
-            const c = concerts.find(con => con.id === id);
-            if (!c) return;
-            const text = `🎤 ${c.name} - ${formatDataItaliana(c.date)} - ${c.address || ''}`;
-            window.open(`https://t.me/share/url?url=${encodeURIComponent(location.href)}&text=${encodeURIComponent(text)}`, '_blank');
-        }
-
-        function updateUI() {
-            const chart = document.getElementById('chartContainer'); chart.innerHTML = '';
-            const totals = {}; members.forEach(m => totals[m.name] = 0);
-            payments.forEach(p => { if (totals[p.payer] !== undefined) totals[p.payer]++; });
-            const maxVal = Math.max(...Object.values(totals), 1);
-            members.forEach(m => {
-                chart.innerHTML += `<div class="stat-row"><span class="stat-name">${m.name}</span><div class="bar-container"><div class="bar-fill" style="background-color:${m.color};width:${(totals[m.name]/maxVal)*100}%"></div></div><span class="stat-count">${totals[m.name]}</span></div>`;
-            });
-            const yf = document.getElementById('yearFilter'); const cur = yf.value; yf.innerHTML = '<option value="all">Tutti</option>';
-            const years = [...new Set(payments.map(p => p.date ? p.date.substring(0,4) : null).filter(y => y))].sort().reverse();
-            years.forEach(y => { yf.innerHTML += `<option value="${y}">${y}</option>`; });
-            if (years.includes(cur)) yf.value = cur;
-            updateHistoryUI();
-        }
-
-        function updateHistoryUI() {
-            const list = document.getElementById('historyList'); list.innerHTML = '';
-            const val = document.getElementById('yearFilter').value;
-            let filtered = val === 'all' ? payments : payments.filter(p => p.date && p.date.startsWith(val));
-            filtered.forEach(p => {
-                const member = members.find(m => m.name === p.payer); const color = member ? member.color : '#000';
-                list.innerHTML += `<li class="history-item"><span class="history-date" style="margin:0">${formatDataItaliana(p.date)}</span><span class="history-name" style="color:${color}">${p.payer}</span></li>`;
-            });
-            document.getElementById('deleteLastBtn').style.display = payments.length > 0 ? 'block' : 'none';
-        }
-        function toggleHistory() {
-            const c = document.getElementById('historyContent'), i = document.getElementById('historyToggleIcon');
-            c.classList.toggle('collapsed'); i.textContent = c.classList.contains('collapsed') ? '▼' : '▲';
-        }
-
-        function formatDataItaliana(d) {
-            if (!d) return "";
-            const dateObj = new Date(d);
-            if (isNaN(dateObj.getTime())) return "Data non valida";
-            let f = dateObj.toLocaleDateString("it-IT", {
-                weekday: "long",
-                day: "numeric",
-                month: "long",
-                year: "numeric"
-            });
-            return f.charAt(0).toUpperCase() + f.slice(1);
-        }
-    </script>
+    function formatDataItaliana(d) {
+        if (!d) return "";
+        const dt = new Date(d);
+        if (isNaN(dt.getTime())) return "Data non valida";
+        const f = dt.toLocaleDateString("it-IT", { weekday:"long", day:"numeric", month:"long", year:"numeric" });
+        return f.charAt(0).toUpperCase() + f.slice(1);
+    }
+</script>
 </body>
 </html>
