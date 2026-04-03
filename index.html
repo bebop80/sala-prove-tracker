@@ -27,7 +27,7 @@
         h1 { text-align: center; font-weight: 800; margin-bottom: 5px; font-size: 28px; cursor:pointer; }
         .edit-hint { text-align:center; font-size:11px; color:var(--text-secondary); margin-bottom:20px; margin-top:-5px;}
         .card { background: var(--card-bg); border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        h2 { font-size: 18px; margin: 0 0 15px 0; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; }
+        h2 { font-size: 18px; margin: 0 0 15px 0; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; cursor: pointer; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 14px; color: var(--text-main); }
         input, select, textarea { width: 100%; padding: 12px; font-size: 16px; border: 1px solid #D1D1D6; border-radius: 10px; background-color: #fff; appearance: none; }
@@ -75,6 +75,9 @@
         }
         
         .theme-toggle { display:flex; align-items:center; gap:10px; font-size:15px; }
+        
+        /* COLLAPSIBLE PAYMENT SECTION */
+        .collapsible-header { cursor: pointer; user-select: none; }
     </style>
 </head>
 <body>
@@ -191,36 +194,39 @@
             </div>
         </div>
 
-        <!-- REGISTRA PAGAMENTO -->
+        <!-- REGISTRA PAGAMENTO (collassata di default) -->
         <div class="card">
-            <h2>Registra Pagamento 💰</h2>
-            <div class="form-group"><label>Data prova pagata</label><input type="date" id="dateInput"></div>
-            <div class="form-group">
-                <label>Chi ha pagato?</label>
-                <select id="payerInput" onchange="handleMemberSelectChange()"></select>
-            </div>
+            <h2 onclick="togglePaymentSection()" class="collapsible-header">Registra Pagamento 💰 <span id="paymentToggleIcon">▼</span></h2>
             
-            <div id="manageMembersBox" class="manage-box">
-                <label>Aggiungi Membro</label>
-                <div class="flex-row">
-                    <input type="text" id="newMemberName" placeholder="Nome" style="flex:2;">
-                    <input type="color" id="newMemberColor" style="flex:1; height:45px; padding:0;">
+            <div id="paymentContent" style="display:none;">
+                <div class="form-group"><label>Data prova pagata</label><input type="date" id="dateInput"></div>
+                <div class="form-group">
+                    <label>Chi ha pagato?</label>
+                    <select id="payerInput" onchange="handleMemberSelectChange()"></select>
                 </div>
-                <button onclick="addMember()" style="margin-bottom:15px;">➕ Aggiungi</button>
-                <label>Rimuovi Membro</label>
-                <ul id="membersListManage" style="list-style:none; padding:0; margin:0;"></ul>
-                <button onclick="closeManageMembers()" style="background:#fff; color:#000; margin-top:15px; font-size:15px;">Chiudi</button>
-            </div>
+                
+                <div id="manageMembersBox" class="manage-box">
+                    <label>Aggiungi Membro</label>
+                    <div class="flex-row">
+                        <input type="text" id="newMemberName" placeholder="Nome" style="flex:2;">
+                        <input type="color" id="newMemberColor" style="flex:1; height:45px; padding:0;">
+                    </div>
+                    <button onclick="addMember()" style="margin-bottom:15px;">➕ Aggiungi</button>
+                    <label>Rimuovi Membro</label>
+                    <ul id="membersListManage" style="list-style:none; padding:0; margin:0;"></ul>
+                    <button onclick="closeManageMembers()" style="background:#fff; color:#000; margin-top:15px; font-size:15px;">Chiudi</button>
+                </div>
 
-            <div id="mainPaymentButtons">
-                <button id="saveBtn" onclick="sendPayment()">Aggiungi Pagamento</button>
-            </div>
+                <div id="mainPaymentButtons">
+                    <button id="saveBtn" onclick="sendPayment()">Aggiungi Pagamento</button>
+                </div>
 
-            <div id="shareBox" style="display:none; margin-top:20px; background:#F2F2F7; padding:15px; border-radius:12px; text-align:center;">
-                <p style="margin:0 0 10px 0; font-weight:600;">Pagamento registrato! Condividi:</p>
-                <div class="flex-row" style="margin:0;">
-                    <button onclick="shareWhatsApp()" style="background-color:#25D366; font-size:15px;">WhatsApp</button>
-                    <button onclick="shareTelegram()" style="background-color:#0088cc; font-size:15px;">Telegram</button>
+                <div id="shareBox" style="display:none; margin-top:20px; background:#F2F2F7; padding:15px; border-radius:12px; text-align:center;">
+                    <p style="margin:0 0 10px 0; font-weight:600;">Pagamento registrato! Condividi:</p>
+                    <div class="flex-row" style="margin:0;">
+                        <button onclick="shareWhatsApp()" style="background-color:#25D366; font-size:15px;">WhatsApp</button>
+                        <button onclick="shareTelegram()" style="background-color:#0088cc; font-size:15px;">Telegram</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -374,7 +380,7 @@
             .catch(() => showToast('Errore di rete. Riprova.'));
         }
 
-        // === PROVE FUTURE ===
+        // === PROVE FUTURE (senza pre-calcolo chi paga) ===
         function toggleFutureRehearsalForm() {
             const f = document.getElementById('addFutureRehearsalForm');
             f.style.display = f.style.display === 'block' ? 'none' : 'block';
@@ -397,14 +403,11 @@
 
             if (!date) { showToast('Inserisci almeno la data'); return; }
 
-            const turno = calcolaTurno();
-            const payer = turno ? turno.name : 'condivisa';
-
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
                 body: JSON.stringify({
                     type: 'add_future_rehearsal',
-                    rehearsal: { id: 'fut_' + Date.now(), date, from, to, room, payer }
+                    rehearsal: { id: 'fut_' + Date.now(), date, from, to, room, payer: '' }  // payer vuoto
                 })
             }).then(() => {
                 toggleFutureRehearsalForm();
@@ -427,7 +430,6 @@
                         ${r.from && r.to ? `<div style="font-weight:700;">🕒 ${r.from} - ${r.to}</div>` : ''}
                         <div style="font-weight:600; color:#000000 !important;">${roomName}</div>
                         ${mapsLink ? `<a href="${mapsLink}" target="_blank" class="maps-link">📍 Apri su Mappe</a>` : ''}
-                        <div style="margin-top:4px; font-size:14px; color:#FF9500;">${r.payer === 'condivisa' ? '💰 Spesa condivisa' : '💰 Paga ' + r.payer}</div>
                     </div>
                     <button class="icon-btn" style="color:#25D366;margin-left:5px;" onclick="shareFutureRehearsalWhatsApp('${r.id}')">WA</button>
                     <button class="icon-btn" style="color:#0088cc;margin-left:5px;" onclick="shareFutureRehearsalTelegram('${r.id}')">TG</button>
@@ -457,7 +459,6 @@
             if (r.from && r.to) text += `🕒 Dalle ${r.from} alle ${r.to}\n`;
             text += `📍 ${roomName}\n`;
             if (mapsLink) text += `🗺️ ${mapsLink}\n`;
-            text += r.payer === 'condivisa' ? `💰 Spesa condivisa` : `💰 Tocca pagare a: ${r.payer}`;
             window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
         }
 
@@ -470,11 +471,10 @@
             text += `📅 ${formatDataItaliana(r.date)}\n`;
             if (r.from && r.to) text += `🕒 Dalle ${r.from} alle ${r.to}\n`;
             text += `📍 ${roomName}\n`;
-            text += r.payer === 'condivisa' ? `💰 Spesa condivisa` : `💰 Tocca pagare a: ${r.payer}`;
             window.open(`https://t.me/share/url?url=${encodeURIComponent(location.href)}&text=${encodeURIComponent(text)}`, '_blank');
         }
 
-        // === NUOVA LOGICA RICHIESTA: promozione automatica prova futura ===
+        // === NUOVA LOGICA PROMOZIONE + CALCOLO CHI PAGA SOLO AL MOMENTO ===
         function sendPayment() {
             const date = document.getElementById('dateInput').value; 
             const payer = document.getElementById('payerInput').value;
@@ -490,10 +490,12 @@
                 payDateObj.setHours(0,0,0,0); 
                 nextDateObj.setHours(0,0,0,0);
                 if (payDateObj.getTime() === nextDateObj.getTime()) { 
-                    // DATA COINCIDE → promuovi la prossima prova futura (se esiste)
                     if (futureRehearsals.length > 0) {
                         const sortedFuture = [...futureRehearsals].sort((a, b) => new Date(a.date) - new Date(b.date));
                         const toPromote = sortedFuture[0];
+                        
+                        const turno = calcolaTurno();           // ← calcolo qui, solo ora
+                        const newPayer = turno ? turno.name : 'condivisa';
                         
                         const newNext = {
                             date: toPromote.date,
@@ -513,7 +515,6 @@
                             });
                         });
                     } else {
-                        // nessuna futura → svuota come prima
                         autoClearPromise = fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ type: 'clear_next_rehearsal' }) });
                     }
                 }
@@ -528,6 +529,14 @@
                     document.getElementById('shareBox').style.display = 'block'; 
                 });
             });
+        }
+
+        // === SEZIONE REGISTRA PAGAMENTO COLLASSABILE ===
+        function togglePaymentSection() {
+            const content = document.getElementById('paymentContent');
+            const icon = document.getElementById('paymentToggleIcon');
+            content.style.display = content.style.display === 'block' ? 'none' : 'block';
+            icon.textContent = content.style.display === 'block' ? '▲' : '▼';
         }
 
         // === FUNZIONI PRECEDENTI INVARIATE ===
@@ -633,7 +642,6 @@
             return f.charAt(0).toUpperCase() + f.slice(1);
         }
 
-        // (tutte le altre funzioni precedenti rimangono invariate - populateMembers, calcolaTurno, updateNextRehearsalUI, shareNext..., ecc.)
         function applySettings() {
             const title = document.getElementById('bandNameDisplay');
             title.textContent = settings.NomeBand || "Sala Prove Tracker ☁️";
